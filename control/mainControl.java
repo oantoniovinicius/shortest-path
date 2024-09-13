@@ -218,7 +218,7 @@ public class mainControl implements Initializable{
         //label.setTextFill(Color.WHITE);
         numbers.add(label);
     }
-}
+  }
 
   /* ******************************************************************
   * Metodo: createConnections
@@ -232,33 +232,33 @@ public class mainControl implements Initializable{
     for (String line : graph) {
         String[] parts = line.split(";");
         if (parts.length >= 2) {
-            int nodeOne = Integer.parseInt(parts[0]);
-            int nodeTwo = Integer.parseInt(parts[1]);
-            int peso = Integer.parseInt(parts[2]);
+          int nodeOne = Integer.parseInt(parts[0]);
+          int nodeTwo = Integer.parseInt(parts[1]);
+          int peso = Integer.parseInt(parts[2]);
 
-            // Criando a linha de conexao entre dois roteadores
-            Polyline Line = new Polyline(
-                routers.get(nodeOne - 1).getCenterX(), routers.get(nodeOne - 1).getCenterY(),
-                routers.get(nodeTwo - 1).getCenterX(), routers.get(nodeTwo - 1).getCenterY()
-            );
-            lines.add(Line);
+          // Criando a linha de conexao entre dois roteadores
+          Polyline Line = new Polyline(
+            routers.get(nodeOne - 1).getCenterX(), routers.get(nodeOne - 1).getCenterY(),
+            routers.get(nodeTwo - 1).getCenterX(), routers.get(nodeTwo - 1).getCenterY()
+          );
+          lines.add(Line);
 
-            // Cálculo da posicao do peso na tela (meio da linha)
-            double xPeso = (routers.get(nodeOne - 1).getCenterX() + routers.get(nodeTwo - 1).getCenterX()) / 2;
-            double yPeso = (routers.get(nodeOne - 1).getCenterY() + routers.get(nodeTwo - 1).getCenterY()) / 2;
+          // Calculo da posicao do peso na tela (meio da linha)
+          double xPeso = (routers.get(nodeOne - 1).getCenterX() + routers.get(nodeTwo - 1).getCenterX()) / 2;
+          double yPeso = (routers.get(nodeOne - 1).getCenterY() + routers.get(nodeTwo - 1).getCenterY()) / 2;
 
-            // Criando o label para exibir o peso
-            Label pesoTela = new Label(Integer.toString(peso));
-            pesoTela.setLayoutX(xPeso);
-            pesoTela.setLayoutY(yPeso);
-            pesoConexoes.add(pesoTela);
+          // Criando o label para exibir o peso
+          Label pesoTela = new Label(Integer.toString(peso));
+          pesoTela.setLayoutX(xPeso);
+          pesoTela.setLayoutY(yPeso);
+          pesoConexoes.add(pesoTela);
 
-            // Adicionando a conexao entre os roteadores com a informacao do peso
-            nodes.get(nodeOne - 1).addConnection(nodeTwo, Line, pesoTela);
-            nodes.get(nodeTwo - 1).addConnection(nodeOne, Line, pesoTela);
+          // Adicionando a conexao entre os roteadores com a informacao do peso
+          nodes.get(nodeOne - 1).addConnection(nodeTwo, Line, pesoTela);
+          nodes.get(nodeTwo - 1).addConnection(nodeOne, Line, pesoTela);
         }
     }
-}
+  }
 
   /* ******************************************************************
   * Metodo: assembleGraph
