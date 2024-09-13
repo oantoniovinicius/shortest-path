@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="control.mainControl">
+   <children>
+      <Group>
+         <children>
+            <ImageView fx:id="background" fitHeight="600.0" fitWidth="900.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../imgs/background.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="aboutButton" fitHeight="13.0" fitWidth="100.0" layoutX="414.0" layoutY="473.0" onMouseClicked="#aboutButton" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../imgs/about.png" />
+               </image>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </ImageView>
+            <ImageView fx:id="version1" fitHeight="22.0" fitWidth="100.0" layoutX="400.0" layoutY="334.0" onMouseClicked="#versionSelected" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../imgs/version1.png" />
+               </image>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </ImageView>
+            <ImageView fx:id="version2" fitHeight="22.0" fitWidth="100.0" layoutX="400.0" layoutY="369.0" onMouseClicked="#versionSelected" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../imgs/version2.png" />
+               </image>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </ImageView>
+            <ImageView fx:id="version3" fitHeight="22.0" fitWidth="100.0" layoutX="400.0" layoutY="405.0" onMouseClicked="#versionSelected" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../imgs/version3.png" />
+               </image>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </ImageView>
+            <ImageView fx:id="version4" fitHeight="22.0" fitWidth="100.0" layoutX="400.0" layoutY="439.0" onMouseClicked="#versionSelected" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../imgs/version4.png" />
+               </image>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </ImageView>
+            <ImageView fx:id="helpButton" fitHeight="30.0" fitWidth="32.0" layoutX="811.0" layoutY="37.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../imgs/helpButton.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="helpScreen" fitHeight="392.0" fitWidth="637.0" layoutX="199.0" layoutY="104.0" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../imgs/helpScreen.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="aboutScreen" fitHeight="482.0" fitWidth="617.0" layoutX="143.0" layoutY="59.0" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../imgs/aboutScreen.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="closeButton" disable="true" fitHeight="34.0" fitWidth="36.0" layoutX="129.0" layoutY="45.0" onMouseClicked="#closeButton" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../imgs/closeButton.png" />
+               </image>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </ImageView>
+         </children>
+      </Group>
+      <Group>
+         <children>
+            <ImageView fx:id="screen" fitHeight="600.0" fitWidth="900.0" layoutY="1.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../imgs/screen.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="selectReceiver" fitHeight="51.0" fitWidth="348.0" layoutX="297.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../imgs/selectReceiver.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="selectSender" fitHeight="51.0" fitWidth="348.0" layoutX="276.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../imgs/selectSender.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="startButton" fitHeight="58.0" fitWidth="168.0" layoutX="679.0" layoutY="517.0" onMouseClicked="#clickStart" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../imgs/start.png" />
+               </image>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </ImageView>
+            <ImageView fx:id="BoxTTL" fitHeight="51.0" fitWidth="348.0" layoutX="343.0" layoutY="241.0" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../imgs/selectTTL.png" />
+               </image>
+            </ImageView>
+            <Label fx:id="totalPackages" alignment="CENTER" contentDisplay="CENTER" layoutX="710.0" layoutY="110.0" prefHeight="27.0" prefWidth="121.0" textFill="WHITE">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <Label fx:id="receiverId" alignment="CENTER" contentDisplay="CENTER" layoutX="113.0" layoutY="155.0" prefHeight="35.0" prefWidth="48.0" textFill="WHITE">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <Label fx:id="senderId" alignment="CENTER" contentDisplay="CENTER" layoutX="113.0" layoutY="75.0" prefHeight="35.0" prefWidth="48.0" textFill="WHITE">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Label>
+            <Spinner fx:id="textTTL" layoutX="376.0" layoutY="286.0" style="-fx-background-color: #3a3a3a;" visible="false" />
+            <ImageView fx:id="sendButton" fitHeight="27.0" fitWidth="128.0" layoutX="405.0" layoutY="334.0" onMouseClicked="#sendTTL" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../imgs/sendButton.png" />
+               </image>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </ImageView>
+            <ImageView fx:id="resetButton" disable="true" fitHeight="34.0" fitWidth="88.0" layoutX="82.0" layoutY="522.0" onMouseClicked="#reset" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../imgs/reset.png" />
+               </image>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </ImageView>
+         </children>
+      </Group>
+   </children>
+</AnchorPane>
