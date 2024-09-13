@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import control.mainControl;
+import javafx.scene.control.Label;
 import javafx.scene.shape.Polyline;
 
 public class Nodes {
@@ -25,6 +26,7 @@ public class Nodes {
   private ArrayList<Packets> packetsCreated = new ArrayList<>(); // pacotes gerados por esse roteador
   boolean controlRecebimento = false;
   private Map<Integer, Boolean> routingTable = new HashMap<>();
+  private ArrayList<Label> pesosCaminho = new ArrayList<>(); // Caminho em px desse roteador ate o No que ele conecta
 
   public Nodes(){
     this.id = 0;
@@ -50,9 +52,10 @@ public class Nodes {
   *  - Polyline route: Caminho visual que conecta os dois roteadores
   * Retorno: void
   ****************************************************************** */
-  public void addConnection(int connected, Polyline route){
+  public void addConnection(int connected, Polyline route, Label peso){
     nodeConnection.add(connected);
     pathConnection.add(route);
+    pesosCaminho.add(peso);
   } //fim do metodo addConnection
 
   /********************************************************************

@@ -72,6 +72,7 @@ public class mainControl implements Initializable{
   ArrayList<ImageView> nodeImage = new ArrayList<>(); //imagem dos roteadores
   ArrayList<Polyline> lines = new ArrayList<>(); //linha visual que conecta os roteadores (rota)
   ArrayList<Label> numbers = new ArrayList<>(); //numero dos Roteadores
+  ArrayList<Label> pesoConexoes = new ArrayList<>(); // Numero dos Roteadores
 
   int versionSelected = 0;
   int TTL = 1;
@@ -200,22 +201,24 @@ public class mainControl implements Initializable{
   * Funcao: Cria rotulos para cada roteador, mostrando o nomero do roteador proximo a imagem correspondente a ele na interface
   * Parametros: 
     - Pane root: O painel onde os rotulos serao adicionados
-    - ArrayList<Circle> routers: Lista de circulos que representam os roteadores.
+    - ArrayList<Circle> routers: Lista de circulos que representam os roteadores
   * Retorno: void
   ****************************************************************** */
   private void createLabels(Pane root, ArrayList<Circle> routers) {
     for (int i = 0; i < routers.size(); i++) {
-      Circle node = routers.get(i);
-      double labelX = node.getCenterX() - 32;
-      double labelY = node.getCenterY() - 32;
+        Circle node = routers.get(i);
+        double labelX = node.getCenterX() - 10;
+        double labelY = node.getCenterY() + 32;
 
-      Label label = new Label(Integer.toString(i + 1));
-      label.setLayoutX(labelX);
-      label.setLayoutY(labelY);
-      label.setTextFill(Color.WHITE);
-      numbers.add(label);
+        char letter = (char) (i + 65);
+
+        Label label = new Label(Character.toString(letter));
+        label.setLayoutX(labelX);
+        label.setLayoutY(labelY);
+        //label.setTextFill(Color.WHITE);
+        numbers.add(label);
     }
-  }
+}
 
   /* ******************************************************************
   * Metodo: createConnections
@@ -227,53 +230,75 @@ public class mainControl implements Initializable{
   ****************************************************************** */
   private void createConnections(Pane root, ArrayList<Circle> routers) {
     for (String line : graph) {
-      String[] parts = line.split(";");
-      if (parts.length >= 2) {
-        int nodeOne = Integer.parseInt(parts[0]);
-        int nodeTwo = Integer.parseInt(parts[1]);
+        String[] parts = line.split(";");
+        if (parts.length >= 2) {
+            int nodeOne = Integer.parseInt(parts[0]);
+            int nodeTwo = Integer.parseInt(parts[1]);
+            int peso = Integer.parseInt(parts[2]);
 
-        Polyline Line = new Polyline(
-          routers.get(nodeOne - 1).getCenterX(), routers.get(nodeOne - 1).getCenterY(),
-          routers.get(nodeTwo - 1).getCenterX(), routers.get(nodeTwo - 1).getCenterY()
-        );
-        lines.add(Line);
-        nodes.get(nodeOne - 1).addConnection(nodeTwo, Line);
-        nodes.get(nodeTwo - 1).addConnection(nodeOne, Line);
-      }
+            // Criando a linha de conexao entre dois roteadores
+            Polyline Line = new Polyline(
+                routers.get(nodeOne - 1).getCenterX(), routers.get(nodeOne - 1).getCenterY(),
+                routers.get(nodeTwo - 1).getCenterX(), routers.get(nodeTwo - 1).getCenterY()
+            );
+            lines.add(Line);
+
+            // Cálculo da posicao do peso na tela (meio da linha)
+            double xPeso = (routers.get(nodeOne - 1).getCenterX() + routers.get(nodeTwo - 1).getCenterX()) / 2;
+            double yPeso = (routers.get(nodeOne - 1).getCenterY() + routers.get(nodeTwo - 1).getCenterY()) / 2;
+
+            // Criando o label para exibir o peso
+            Label pesoTela = new Label(Integer.toString(peso));
+            pesoTela.setLayoutX(xPeso);
+            pesoTela.setLayoutY(yPeso);
+            pesoConexoes.add(pesoTela);
+
+            // Adicionando a conexao entre os roteadores com a informacao do peso
+            nodes.get(nodeOne - 1).addConnection(nodeTwo, Line, pesoTela);
+            nodes.get(nodeTwo - 1).addConnection(nodeOne, Line, pesoTela);
+        }
     }
-  }
+}
 
   /* ******************************************************************
   * Metodo: assembleGraph
   * Funcao: Adiciona os circulos, linhas e rotulos ao painel raiz para formar o grafo visual que representa a rede de roteadores
   * Parametros: 
-    - Pane root: O painel onde os elementos do grafo serão adicionados
+    - Pane root: O painel onde os elementos do grafo serao adicionados
     - ArrayList<Circle> routers: Lista de circulos que representam os roteadores
   * Retorno: void
   ****************************************************************** */
   private void assembleGraph(Pane root, ArrayList<Circle> routers) {
     for (Polyline Line : lines) {
-      Line.setStroke(Color.BLACK);
-      Line.setStrokeWidth(2);
-      root.getChildren().add(Line);
+        Line.setStroke(Color.BLACK);
+        Line.setStrokeWidth(2);
+        root.getChildren().add(Line);
     }
 
     for (Circle circle : routers) {
-      ImageView firstNode = new ImageView(new Image("./imgs/node.png"));
-      firstNode.setLayoutX(circle.getCenterX() - circle.getRadius());
-      firstNode.setLayoutY(circle.getCenterY() - circle.getRadius());
-      nodeImage.add(firstNode);
-      root.getChildren().add(firstNode);
+        ImageView firstNode = new ImageView(new Image("./imgs/node.png"));
+        firstNode.setLayoutX(circle.getCenterX() - circle.getRadius());
+        firstNode.setLayoutY(circle.getCenterY() - circle.getRadius());
+        nodeImage.add(firstNode);
+        root.getChildren().add(firstNode);
     }
 
     for (Label label : numbers) {
-      root.getChildren().add(label);
+        label.setStyle("-fx-font-size: 14pt; " + "-fx-font-weight: bold;");
+        root.getChildren().add(label);
     }
 
-    for (Nodes router : nodes) {
-      router.listConnections();
+    // Adiciona os numeros do peso na tela
+    for (Label label : pesoConexoes) {
+        label.setStyle("-fx-font-size: 10pt; " + "-fx-font-weight: bold;");
+        label.setTextFill(Color.WHITE);
+        root.getChildren().add(label);
     }
-  }
+
+    for (int i = 0; i < nodes.size(); i++) {
+        nodes.get(i).listConnections();
+    }
+}
 
   /* ******************************************************************
   * Metodo: selectFirstNode
