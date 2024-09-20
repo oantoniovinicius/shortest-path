@@ -35,17 +35,14 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polyline;
+import javafx.scene.text.Text;
 
 public class mainControl implements Initializable{
-  @FXML private ImageView version1;
-  @FXML private ImageView version2;
-  @FXML private ImageView version3;
-  @FXML private ImageView version4;
-
   @FXML private ImageView helpScreen;
   @FXML private ImageView aboutScreen;
   @FXML private ImageView background;
   @FXML private ImageView screen;
+  @FXML private ImageView menorCaminhoIMG;
 
   @FXML private ImageView node;
   @FXML private ImageView nodeSent;
@@ -55,6 +52,7 @@ public class mainControl implements Initializable{
   @FXML private ImageView aboutButton;
   @FXML private ImageView closeButton;
   @FXML private ImageView sendButton;
+  @FXML private ImageView iniciar;
   @FXML private ImageView resetButton;
   @FXML private ImageView startButton;
   @FXML private ImageView selectSender;
@@ -64,8 +62,7 @@ public class mainControl implements Initializable{
   @FXML private Label senderId;
   @FXML private Label receiverId;
 
-  @FXML private ImageView BoxTTL;
-  @FXML private Spinner<Integer> textTTL;
+  @FXML private Text caminho;
 
   ArrayList<String> graph = new ArrayList<>(); //roteadores do Grafo para leitura do txt e implementacao visual
   ArrayList<Nodes> nodes = new ArrayList<>(); //roteadores
@@ -98,12 +95,13 @@ public class mainControl implements Initializable{
   public void initialize(URL location, ResourceBundle resources) {
     buttonEffects();
 
+    setOffOn(menorCaminhoIMG, 0);
+    setOffOn(iniciar, 1);
     setOffOn(startButton, 0);
     setOffOn(selectSender, 0);
     setOffOn(selectReceiver, 0);
     setOffOn(screen, 0);
 
-    textTTL.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 20, 3));
   }
     
   /* ******************************************************************
@@ -193,6 +191,7 @@ public class mainControl implements Initializable{
       router.setController(this);
       nodes.add(router);
     }
+    //createConnections(root, routers);
     return routers;
   }
 
@@ -207,15 +206,16 @@ public class mainControl implements Initializable{
   private void createLabels(Pane root, ArrayList<Circle> routers) {
     for (int i = 0; i < routers.size(); i++) {
         Circle node = routers.get(i);
-        double labelX = node.getCenterX() - 10;
-        double labelY = node.getCenterY() + 32;
+        double labelX = node.getCenterX() - 12;
+        double labelY = node.getCenterY() + 28;
 
         char letter = (char) (i + 65);
 
         Label label = new Label(Character.toString(letter));
         label.setLayoutX(labelX);
         label.setLayoutY(labelY);
-        //label.setTextFill(Color.WHITE);
+        label.setStyle("-fx-font-size: 6pt; " + "-fx-font-weight: bold;");
+        label.setTextFill(Color.BLACK);
         numbers.add(label);
     }
   }
@@ -258,6 +258,7 @@ public class mainControl implements Initializable{
           nodes.get(nodeTwo - 1).addConnection(nodeOne, Line, pesoTela);
         }
     }
+    //assembleGraph(root, routers);
   }
 
   /* ******************************************************************
@@ -284,7 +285,7 @@ public class mainControl implements Initializable{
     }
 
     for (Label label : numbers) {
-        label.setStyle("-fx-font-size: 14pt; " + "-fx-font-weight: bold;");
+        label.setStyle("-fx-font-size: 12pt; " + "-fx-font-weight: bold;");
         root.getChildren().add(label);
     }
 
@@ -365,6 +366,13 @@ public class mainControl implements Initializable{
     }
   }
 
+  @FXML
+  void opcaoSelecionada(MouseEvent event) {
+    setOffOn(screen, 1);
+    setOffOn(iniciar, 0);
+    startProgram();
+  }
+
   /* ******************************************************************
   * Metodo: showAlert
   * Funcao: Exibe uma caixa de dialogo de alerta com uma mensagem personalizada (geralmente de erro)
@@ -389,22 +397,12 @@ public class mainControl implements Initializable{
   ****************************************************************** */
   @FXML
   void clickStart(MouseEvent event) {
-    switch (getVersionSelected()) {
-      case 3:
-        nodes.get(nodeSender-1).sendPackets(TTL, -1);
-        setOffOn(startButton, 0);
-        setOffOn(resetButton, 1);
-        break;
-      case 4: 
-        nodes.get(nodeSender-1).sendPackets(TTL, -1);
-        setOffOn(startButton, 0);
-        setOffOn(resetButton, 1);
-        break;
-      default: 
-        nodes.get(nodeSender-1).sendPackets(TTL, -1);
-        setOffOn(startButton, 0);
-        setOffOn(resetButton, 1);
-        break;
+    if (nodeReceiver != -1 && nodeSender != -1) {
+      nodes.get(nodeSender - 1).calcularMenorCaminho(); // Chama o Metodo para Calcular o Menor Caminho
+      setOffOn(startButton, 0);
+      setOffOn(menorCaminhoIMG, 1);
+    } else {
+     showAlert("Erro!","Selecione o Transmissor e/ou Receptor");
     }
   }
 
@@ -451,16 +449,14 @@ public class mainControl implements Initializable{
 
     resetVariables();
 
+    setOffOn(menorCaminhoIMG, 0);
     setOffOn(background, 1);
     setOffOn(screen, 0);
-    setOffOn(version1, 1);
-    setOffOn(version2, 1);
-    setOffOn(version3, 1);
-    setOffOn(version4, 1);
     setOffOn(startButton, 0);
     setOffOn(resetButton, 0);
     setOffOn(selectReceiver, 0);
     setOffOn(selectSender, 0);
+    setOffOn(iniciar, 1);
 
     Nodes routers = new Nodes();
     routers.resetRoutingTable();
@@ -489,7 +485,6 @@ public class mainControl implements Initializable{
     totalPackages.setText(null);
     receiverId.setText(null);
     senderId.setText(null);
-    textTTL.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 20, 3));
   }
 
   /* ******************************************************************
@@ -499,39 +494,8 @@ public class mainControl implements Initializable{
   * Retorno: void
   ****************************************************************** */
   public void buttonEffects(){
-    colorAdjust.setBrightness(0.5);
+    colorAdjust.setBrightness(1);
 
-    version1.setOnMouseEntered(event -> {
-      version1.setEffect(colorAdjust);
-    });
-
-    version1.setOnMouseExited(event -> {
-      version1.setEffect(null);
-    });
-
-    version2.setOnMouseEntered(event -> {
-      version2.setEffect(colorAdjust);
-    });
-
-    version2.setOnMouseExited(event -> {
-      version2.setEffect(null);
-    });
-
-    version3.setOnMouseEntered(event -> {
-      version3.setEffect(colorAdjust);
-    });
-
-    version3.setOnMouseExited(event -> {
-      version3.setEffect(null);
-    });
-
-    version4.setOnMouseEntered(event -> {
-      version4.setEffect(colorAdjust);
-    });
-
-    version4.setOnMouseExited(event -> {
-      version4.setEffect(null);
-    });
 
     startButton.setOnMouseEntered(event -> {
       startButton.setEffect(colorAdjust);
@@ -539,14 +503,6 @@ public class mainControl implements Initializable{
 
     startButton.setOnMouseExited(event -> {
       startButton.setEffect(null);
-    });
-
-    sendButton.setOnMouseEntered(event -> {
-      sendButton.setEffect(colorAdjust);
-    });
-
-    sendButton.setOnMouseExited(event -> {
-      sendButton.setEffect(null);
     });
 
     helpButton.setOnMouseEntered(event -> {
@@ -564,6 +520,14 @@ public class mainControl implements Initializable{
     resetButton.setOnMouseExited(event -> {
       resetButton.setEffect(null);
     });
+
+    iniciar.setOnMouseEntered(event -> {
+      iniciar.setEffect(colorAdjust);
+    });
+
+    iniciar.setOnMouseExited(event -> {
+      iniciar.setEffect(null);
+    });
   }
 
   /* ******************************************************************
@@ -580,6 +544,9 @@ public class mainControl implements Initializable{
       getRoot().getChildren().remove(Line);
     }
     for (Label label : numbers) {
+      getRoot().getChildren().remove(label);
+    }
+    for (Label label : pesoConexoes){
       getRoot().getChildren().remove(label);
     }
   }
@@ -608,76 +575,112 @@ public class mainControl implements Initializable{
     nodeImage.get(node-1).setImage(new Image("./imgs/packetReceived.png"));
   }
 
-  /* ******************************************************************
-  * Metodo: versionSelected
-  * Funcao: troca a tela e inicia o programa dependendo da versao escolhida pelo usuario na interface
-  * Parametros: 
-    - MouseEvent event -> clique do mouse em um dos botoes
-  * Retorno: void
-  ****************************************************************** */
-  @FXML
-  void versionSelected(MouseEvent event) {
-    if(graphFlag){
-      Node source = (Node) event.getSource();
-      switch (source.getId()) { // verifica qual versao foi escolhida
-        case "version1":
-          System.out.println("Versao selecionada: 1");
-          setOffOn(screen, 1);
-          
-          startProgram();
-          setVersionSelected(1);
-        break;
-        
-        case "version2":
-          System.out.println("Versao selecionada: 2");
-          screen.setVisible(true);
+  public void encontrarMenorDistancia() {
+    
+    boolean todosVisitados = false; // verifica se todos nos ja foram visitados ou nao
+    int menorValor = 99999;// Assume um valor Exorbitante como o Menor Inicialmente
+    int indiceMenorValor = 0; // Armazena o índice do menor valor
 
-          startProgram();
-          setVersionSelected(2);
-        break;
-        
-        case "version3":
-          System.out.println("Versao selecionada: 3");
-          textTTL.setVisible(true);
-          textTTL.setDisable(false);
-          setOffOn(screen, 1);
-          setOffOn(BoxTTL, 1);
-          setOffOn(sendButton, 1);
-
-          setVersionSelected(3);
-        break;
-
-        case "version4":
-          System.out.println("Versao selecionada: 4");
-          textTTL.setVisible(true);
-          textTTL.setDisable(false);
-          setOffOn(screen, 1);
-          setOffOn(BoxTTL, 1);
-          setOffOn(sendButton, 1);
-
-          setVersionSelected(4);
+    // Percorre a lista para encontrar o menor valor e seu índice
+    for (int i = 0; i < nodes.size(); i++) {
+      if(!nodes.get(i).getVisitado()){
+        todosVisitados = true;
+        int valorAtual = nodes.get(i).getDistancia();
+        if (valorAtual < menorValor && valorAtual != -1) {
+          menorValor = valorAtual;
+          indiceMenorValor = i;
+        }
       }
     }
+    if(todosVisitados){
+      nodes.get(indiceMenorValor).calcularMenorCaminho(); //Chama o roteador com o Menor Caminho
+    }
+    else{
+      for (Nodes x : nodes) {
+        System.out.println("ID DO ROTEADOR [ "+ x.getId() + " ] Sua Distancia do No Inicial [ "+ x.getDistancia()+" ]"+ " Seu Predecessor [ "+ x.getPredecessor() + " ]");
+      }
+      UpdateGUImostrarMenorCaminho();
+      
+    }
+}
+
+public void UpdateGUImostrarMenorCaminho() {
+  ArrayList<Integer> auxGUI = new ArrayList<>();
+
+  StringBuilder menorCaminho = new StringBuilder();
+  int nodePai = nodeReceiver - 1;
+
+  // Construindo o menor caminho
+  while (nodeSender - 1 != nodePai) {
+      // Converte o predecessor para uma letra (ASCII)
+      char predecessorChar = (char) (nodes.get(nodePai).getPredecessor() + 64);
+      menorCaminho.insert(0, " -> " + predecessorChar);
+      nodePai = nodes.get(nodePai).getPredecessor() - 1;
+      auxGUI.add(nodePai);
+  }
+  
+  // Adiciona o nó receptor como a última letra
+  menorCaminho.append(" -> " + (char) (nodeReceiver + 64));
+  menorCaminho.delete(0, 4);  // Remove o primeiro " -> "
+
+  System.out.println("Menor caminho: " + menorCaminho.toString());
+
+  auxGUI.add(nodeReceiver - 1);
+
+  // Ajusta a opacidade das imagens de nós não pertencentes ao menor caminho
+  for (int i = 0; i < nodeImage.size(); i++) {
+      ImageView imageView = nodeImage.get(i);  // Obtém a ImageView atual
+      if (!auxGUI.contains(i)) {
+          imageView.setOpacity(0.15);  // Ajusta a opacidade da imagem
+      }
   }
 
-  /* ******************************************************************
-  * Metodo: sendTTL
-  * Funcao: envia e armazena o valor do TTL escolhido no spinner
-  * Parametros: 
-    - MouseEvent event -> clique do mouse no botao
-  * Retorno: void
-  ****************************************************************** */
-  @FXML
-  public void sendTTL(MouseEvent event) {
-    TTL = textTTL.getValue();
-    System.out.println("Valor do TTL: " + TTL);
-
-    textTTL.setVisible(false);
-    textTTL.setDisable(true);
-    setOffOn(BoxTTL, 0);
-    setOffOn(sendButton, 0);
-    startProgram();
+  // Ajusta a opacidade das labels de nós não pertencentes ao menor caminho
+  for (int i = 0; i < numbers.size(); i++) {
+      Label label = numbers.get(i);  // Obtém a Label atual
+      if (!auxGUI.contains(i)) {
+          label.setOpacity(0.15);  // Ajusta a opacidade da label
+      }
   }
+
+  // Ajusta a opacidade dos roteadores na GUI
+  for (Nodes router : nodes) {
+      router.setOpacityGui();
+  }
+
+  // Divide o menor caminho em uma lista de letras
+  String[] numerosString = menorCaminho.toString().split(" -> ");
+  ArrayList<Integer> numeros = new ArrayList<>();
+  
+  for (String numeroString : numerosString) {
+      // Converte a letra de volta para o número correspondente
+      int numero = numeroString.charAt(0) - 64;
+      numeros.add(numero);
+  }
+
+  // Ajusta a visualização das conexões
+  for (int i = 0; i < numeros.size() - 1; i++) {
+      ArrayList<Integer> nos = nodes.get(numeros.get(i) - 1).getNodeConnection();
+      int indiceEncontrado = -1;  // Inicializa com -1 para indicar que nenhum índice foi encontrado
+      for (int j = 0; j < nos.size(); j++) {
+          if (nos.get(j).equals(numeros.get(i + 1))) {
+              indiceEncontrado = j;
+              break;  // Se encontrar o índice, não é necessário continuar procurando
+          }
+      }
+      nodes.get(numeros.get(i) - 1).ajusteVisualizacaoGUI(indiceEncontrado);
+  }
+
+  // Mostra o caminho final em ASCII na interface
+  menorCaminhoIMG.setVisible(true);
+  menorCaminhoIMG.setDisable(false);
+  caminho.setText(menorCaminho.toString());
+  caminho.setVisible(true);
+  caminho.setDisable(false);
+
+  // Envia os pacotes no caminho
+  nodes.get(nodeSender - 1).sendPackets(numeros);
+}
 
   /* ******************************************************************
   * Metodo: startProgram()
@@ -719,10 +722,6 @@ public class mainControl implements Initializable{
   * Retorno: void
   ****************************************************************** */
    public void changeScreen() {
-    setOffOn(version1, 0);
-    setOffOn(version2, 0);
-    setOffOn(version3, 0);
-    setOffOn(version4, 0);
     setOffOn(background, 0);
     setOffOn(selectSender, 1);
     setOffOn(resetButton, 1);

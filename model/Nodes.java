@@ -27,6 +27,10 @@ public class Nodes {
   boolean controlRecebimento = false;
   private Map<Integer, Boolean> routingTable = new HashMap<>();
   private ArrayList<Label> pesosCaminho = new ArrayList<>(); // Caminho em px desse roteador ate o No que ele conecta
+  Packets packet;
+  private int Distancia = -1;
+  private int Predecessor = -1;
+  private boolean visitado = false;
 
   public Nodes(){
     this.id = 0;
@@ -58,6 +62,34 @@ public class Nodes {
     pesosCaminho.add(peso);
   } //fim do metodo addConnection
 
+  public void calcularMenorCaminho() {
+    ArrayList<Nodes> rtd = mC.getNodes(); // ArrayAux
+
+    if (mC.getNodeSender() == this.id) {
+      Distancia = 0; // Setando Distancia do no Inicial
+    }
+    setVisitado(true); // Seta No ja visitado
+
+    // Busca qual eh o proximo
+    for (int i = 0; i <nodeConnection.size(); i++) {
+      int auxIndice = nodeConnection.get(i) - 1; // Pega o no que esse Roteador Conecta
+
+      if (!rtd.get(auxIndice).getVisitado()) { // Verifica se o No ja foi visitado
+        // Seta a distancia entre eles que eh a a distancia ate chegar no seu
+        // predecessor + a distancia ate ele
+        int distanciaAux = getDistancia() + Integer.parseInt(pesosCaminho.get(i).getText());
+
+        // Verifica se a distancia no prox no eh maior, caso seja, essa menor eh setada
+        if (rtd.get(auxIndice).getDistancia() > distanciaAux || rtd.get(auxIndice).getDistancia() == -1) {
+          rtd.get(auxIndice).setDistancia(distanciaAux);
+          rtd.get(auxIndice).setPredecessor(this.id);// Seta o Pai dele no menor caminho
+        }
+      }
+    }
+    mC.encontrarMenorDistancia(); // Verifica qual a menor distancia, para calcular ela
+  }
+
+  
   /********************************************************************
   * Metodo: sendPackets(int TTL, int firstNode)
   * Funcao: Envia pacotes para os roteadores conectados, com base na versao selecionada na interface
@@ -66,82 +98,17 @@ public class Nodes {
   *  - int firstNode: ID do roteador que enviou o pacote originalmente
   * Retorno: void
   ****************************************************************** */
-  public void sendPackets(int TTL, int firstNode){
-    if(mC.getNodeReceiver() != this.id){
-      switch (mC.getVersionSelected()) {
-        case 1: // opcao 1
-          for(int i = 0; i < nodeConnection.size(); i++){
-            Packets packet = new Packets(this.id, nodeConnection.get(i), pathConnection.get(i), mC.getRoot(), -1, mC);
-            createPacket(packet); //criacao e envio do pacote
-          }
-          break;
-        case 2: // opcao 2
-          for (int i = 0; i < nodeConnection.size(); i++) {
-            if (nodeConnection.get(i) != firstNode) { // envia para todos EXCETO o roteador que encaminhou o pacote para ele
-              Packets packet = new Packets(this.id, nodeConnection.get(i), pathConnection.get(i), mC.getRoot(), -1, mC);
-              createPacket(packet); //criacao e envio do pacote
-            }
-          }
-          break;
-        case 3: // opcao 3
-          if (TTL != 0) { // se TTL = 0 nao envia mais o pacote
-            for (int i = 0; i < nodeConnection.size(); i++) { // encaminha para todos EXCETO quem enviou e verifica o TTL
-              if (nodeConnection.get(i) != firstNode) {// envia para todos EXCETO o roteador que encaminhou o pacote para ele
-                // TTL-1 = subtrai 1 pulo do pacote
-                Packets Pacote = new Packets(this.id, nodeConnection.get(i), pathConnection.get(i), mC.getRoot(), TTL - 1, mC);
-                createPacket(Pacote); //criacao e envio do pacote
-              }
-            }
-          }
-          break;
-
-        /* Version 4:
-        Essa implementacao oferece uma melhoria em relacao ao algoritmo 3 ao implementar uma tabela de roteamento dinamica
-        Ou seja, ao inves de enviar pacotes para todos os roteadores conectados a todo instante, 
-        ele mantém uma tabela com informacoes sobre quais roteadores ja receberam pacotes com sucesso, 
-        ajudando a evitar o reenvio desnecessario de pacotes para os mesmos roteadores.
-
-        Vantagem: 
-        1. Reducao de Trafego: Evita o reenvio de pacotes para nos que ja receberam a mensagem, reduzindo o trafego total na rede.
-        2. Eficiencia: Melhora a eficiencia do algoritmo ao minimizar o numero de pacotes gerados assim como o numero de threads criadas.
-
-        Funcionamento:
-        1. Tabela de roteamento dinamico: 
-        Cada roteador mantem uma tabela do tipo (Map<Integer, Boolean> routingTable)
-        que rastreia se um roteador conectado ja recebeu o pacote.
-        Antes de enviar um pacote, o roteador verifica a tabela. Se o roteador de destino ja estiver na tabela como "recebeu", 
-        o pacote nao eh enviado para esse roteador.
-        Caso contrario, o roteador envia o pacote e marca o roteador na tabela como "recebeu".
-
-        2. Atualizacao Dinamica da Tabela:
-        Quando o roteador recebe a confirmacao de que um pacote foi entregue com sucesso, 
-        ele pode propagar essa informação aos seus vizinhos, permitindo que os roteadores atualizem suas tabelas de roteamento dinamicamente.
-        
-        Implementacao:
-        Antes de enviar um pacote para um roteador conectado a ele, o roteador verifica se esse roteador ja recebeu um pacote.
-        Para isso, ele verifica a "routingTable".
-        Se o roteador nao estiver marcado ou se nao tiver informacao sobre ele (nao recebeu um pacote), o roteador envia um pacote
-        e o roteador sera marcado como "recebeu"  */
-        case 4:
-        if (TTL != 0) { // se TTL = 0 nao envia mais o pacote
-          for (int i = 0; i < nodeConnection.size(); i++) {
-            int targetNode = nodeConnection.get(i);
-            //verifica se o roteador de destino ja recebeu o pacote e se o pacote deve ser enviado de volta para o roteador que o enviou
-            if (targetNode != firstNode && !routingTable.getOrDefault(targetNode, false)) { 
-              // TTL-1 = subtrai 1 pulo do pacote
-              Packets packet = new Packets(this.id, targetNode, pathConnection.get(i), mC.getRoot(), TTL - 1, mC);
-              createPacket(packet); //criacao e envio do pacote
-              routingTable.put(targetNode, true); //marca como recebeu
-            }
-          }
-        } 
-        break;
-        default:
+  public void sendPackets(ArrayList<Integer> Receptor){
+      if(mC.getNodeReceiver() != this.id ){
+        Receptor.remove(0);
+        for (int i = 0; i < nodeConnection.size(); i++) {
+          if (nodeConnection.get(i) == Receptor.get(0)) {
+            packet = new Packets(this.id, Receptor.get(0), pathConnection.get(i), mC.getRoot(), mC, Receptor);
+            packet.start();
             break;
+          }
+        }
       }
-    } else {
-      receivePacket();
-    }
   } //fim do metodo sendPackets()
 
   /* *******************************************************************
@@ -197,6 +164,15 @@ public class Nodes {
     System.out.println("");
   } //fim do metodo listConnections()
 
+  public void ajusteVisualizacaoGUI(int indice) {
+    for (int i = 0; i < pathConnection.size(); i++) {
+      if (i == indice || nodeConnection.get(i) == Predecessor) {
+        pathConnection.get(i).setOpacity(1);
+        pesosCaminho.get(i).setOpacity(1);
+      }
+    }
+  }
+
   /* ******************************************************************
   * Metodo: stopPackages()
   * Funcao: para todos os pacotes em transito e limpa a lista de pacotes criados
@@ -204,11 +180,46 @@ public class Nodes {
   * Retorno: void
   ****************************************************************** */
   public void stopPackages(){
-    for(Packets Pack: packetsCreated){
-      Pack.setControlFinished(false);
-      Pack.breakAnimation();
-      Pack.interrupt();
+    if(packet != null){
+      packet.setControlFinished(false);
+      packet.breakAnimation();
+      packet.interrupt();
     }
     packetsCreated.clear();
   }//fim do metodo stopPackages()
+
+  public void setOpacityGui() {
+    for (int i = 0; i < pathConnection.size(); i++) {
+      pathConnection.get(i).setOpacity(0.15);
+      pesosCaminho.get(i).setOpacity(0.15);
+    }
+  }
+
+  public void setDistancia(int distancia) {
+    Distancia = distancia;
+  }
+
+  public int getDistancia() {
+    return Distancia;
+  }
+
+  public int getPredecessor() {
+    return Predecessor;
+  }
+
+  public void setVisitado(boolean visitado) {
+    this.visitado = visitado;
+  }
+
+  public boolean getVisitado() {
+    return visitado;
+  }
+  
+  public void setPredecessor(int predecessor) {
+    Predecessor = predecessor;
+  }
+
+  public ArrayList<Integer> getNodeConnection() {
+    return nodeConnection;
+  }
 }

@@ -14,7 +14,8 @@ import javafx.animation.PathTransition;
 import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.util.Duration;
-import java.util.Random;
+
+import java.util.ArrayList;
 import control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -25,7 +26,7 @@ import javafx.scene.shape.Polyline;
 import javafx.scene.shape.Path;
 
 public class Packets extends Thread{
-  private int TTL; // numero de hops / saltos que o pacote faz antes de ser descartado
+ // numero de hops / saltos que o pacote faz antes de ser descartado
   private int nodeSender; //roteador transmissor
   private int nodeReceiver; //roteador receptor
   private Polyline pathToGo; //caminho que o pacote vai percorrer na interface, em pixels
@@ -35,6 +36,7 @@ public class Packets extends Thread{
   boolean controlFinished = true; //indica se a animacao do pacote foi finalizada
   PathTransition pathTransition = new PathTransition(); //animacao do movimento do pacote
   private boolean invertRoute = false; //controla se a rota deve ser invertida ao desenhar
+  ArrayList<Integer> menorCaminho = new ArrayList<>();
 
   /* ******************************************************************
   * Construtor: Packets
@@ -48,20 +50,19 @@ public class Packets extends Thread{
     - mainControl control: Controlador principal da aplicacao
   * Retorno: Construtor sem retorno
   ****************************************************************** */
-  public Packets(int sender, int receiver, Polyline path, Pane root, int ttl, mainControl control) {
+  public Packets(int sender, Integer receiver, Polyline path, Pane root, mainControl control, ArrayList<Integer> caminho) {
     nodeSender = sender;
     nodeReceiver = receiver;
     pathToGo = path;
-    TTL = ttl;
     mC = control;
+    menorCaminho = caminho;
 
     Root = root; 
     packet = new ImageView(new Image("./imgs/package.png"));
-    Root.getChildren().add(packet); //adiciona a imagem do pacote ao painel
     if(nodeSender > nodeReceiver){
       invertRoute = true; //inverte a rota se o roteador de origem tiver ID maior que o de destino
     }
-    }
+  }
   
   /* ******************************************************************
   * Metodo: sendPacket
@@ -82,17 +83,19 @@ public class Packets extends Thread{
       path.getElements().add(new LineTo(points.get(2), points.get(3)));
     }
 
-    Platform.runLater(() -> { //executa a animacao do pacote
-      pathTransition.setNode(packet);
-      pathTransition.setPath(path); //define o caminho para a animacao
-      pathTransition.setDuration(Duration.millis(randomTimer())); //define a duracao da animacao
-      pathTransition.play();
-      pathTransition.setOnFinished(event -> { //acao ao fim da animacao
-      if(controlFinished){
-        packet.setVisible(false); //pacote some apos animacao
-        mC.getNodes().get(nodeReceiver-1).sendPackets(TTL, nodeSender); //envia o pacote para o proximo roteador
-      }
-    });});
+    Platform.runLater(() -> {
+        Root.getChildren().add(packet);
+        pathTransition.setNode(packet);
+        pathTransition.setPath(path);
+        pathTransition.setDuration(Duration.millis(2000)); // Define a duração da animação (em segundos)
+        pathTransition.play();
+        pathTransition.setOnFinished(event -> {
+          if(controlFinished){
+            packet.setVisible(false);
+            mC.getNodes().get(nodeReceiver-1).sendPackets(menorCaminho); // Roteador Recebeu o No
+          }
+        });
+      });
   }
 
   /* ******************************************************************
@@ -106,17 +109,6 @@ public class Packets extends Thread{
     sendPacket();
   }
 
-   /* ******************************************************************
-  * Metodo: randomTimer
-  * Funcao: gera um tempo de duracao aleatorio para a animacao do pacote dentro de um intervalo pre-definido.
-  * Parametros: Nenhum
-  * Retorno: int - Valor aleatorio entre 1700 e 3500 milissegundos
-  ****************************************************************** */
-  public int randomTimer() {
-    Random random = new Random();
-    int valorAleatorio = random.nextInt(1801) + 1700;
-    return valorAleatorio;
-  }
 
   /* ******************************************************************
   * Metodo: breakAnimation
@@ -149,9 +141,5 @@ public class Packets extends Thread{
 
   public Polyline getPathToGo() {
     return pathToGo;
-  }
-
-  public int getTTL() {
-    return TTL;
   }
 }
