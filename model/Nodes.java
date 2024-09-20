@@ -108,6 +108,8 @@ public class Nodes {
             break;
           }
         }
+      } else {
+        receivePacket();
       }
   } //fim do metodo sendPackets()
 
