@@ -1,8 +1,8 @@
 /* ***************************************************************
 * Autor............: Antonio Vinicius Silva Dutra
 * Matricula........: 202110810
-* Inicio...........: 27/08/2024
-* Ultima alteracao.: 08/08/2024
+* Inicio...........: 20/09/2024
+* Ultima alteracao.: 21/09/2024
 * Nome.............: Principal.java
 * Funcao...........: Starta as cenas e carrega o FXML para iniciar o programa
 ****************************************************************/

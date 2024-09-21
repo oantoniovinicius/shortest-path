@@ -1,8 +1,8 @@
 /* ***************************************************************
 * Autor............: Antonio Vinicius Silva Dutra
 * Matricula........: 202110810
-* Inicio...........: 27/08/2024
-* Ultima alteracao.: 08/08/2024
+* Inicio...........: 20/09/2024
+* Ultima alteracao.: 21/09/2024
 * Nome.............: Packets.java
 * Funcao...........: classe responsavel pelo gerenciamentos dos pacotes. 
 Isso inclui as threads e as suas animacoes, assim como todas as variveis necessarias para
@@ -26,7 +26,6 @@ import javafx.scene.shape.Polyline;
 import javafx.scene.shape.Path;
 
 public class Packets extends Thread{
- // numero de hops / saltos que o pacote faz antes de ser descartado
   private int nodeSender; //roteador transmissor
   private int nodeReceiver; //roteador receptor
   private Polyline pathToGo; //caminho que o pacote vai percorrer na interface, em pixels

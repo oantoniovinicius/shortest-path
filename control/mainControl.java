@@ -1,8 +1,8 @@
 /* ***************************************************************
 * Autor............: Antonio Vinicius Silva Dutra
 * Matricula........: 202110810
-* Inicio...........: 27/08/2024
-* Ultima alteracao.: 08/08/2024
+* Inicio...........: 20/09/2024
+* Ultima alteracao.: 21/09/2024
 * Nome.............: mainControl.java
 * Funcao...........: classe responsavel pelo controle da interface grafica.
 Gerencia as imagens, botoes, adiciona os roteadores na interface, altera entre telas, etc.
@@ -38,14 +38,14 @@ import javafx.scene.text.Text;
 public class mainControl implements Initializable{
   @FXML private ImageView background;
   @FXML private ImageView screen;
-  @FXML private ImageView menorCaminhoIMG;
+  @FXML private ImageView shorterPathImg;
 
   @FXML private ImageView node;
   @FXML private ImageView nodeSent;
   @FXML private ImageView nodeReceive;
 
   @FXML private ImageView sendButton;
-  @FXML private ImageView iniciar;
+  @FXML private ImageView start;
   @FXML private ImageView resetButton;
   @FXML private ImageView startButton;
   @FXML private ImageView selectSender;
@@ -54,8 +54,8 @@ public class mainControl implements Initializable{
   @FXML private Label senderId;
   @FXML private Label receiverId;
 
-  @FXML private Text caminho;
-  @FXML private Text custoDoCaminho;
+  @FXML private Text pathText;
+  @FXML private Text pathCostText;
 
   ArrayList<String> graph = new ArrayList<>(); //roteadores do Grafo para leitura do txt e implementacao visual
   ArrayList<Nodes> nodes = new ArrayList<>(); //roteadores
@@ -85,8 +85,8 @@ public class mainControl implements Initializable{
   public void initialize(URL location, ResourceBundle resources) {
     buttonEffects();
 
-    setOffOn(menorCaminhoIMG, 0);
-    setOffOn(iniciar, 1);
+    setOffOn(shorterPathImg, 0);
+    setOffOn(start, 1);
     setOffOn(startButton, 0);
     setOffOn(selectSender, 0);
     setOffOn(selectReceiver, 0);
@@ -372,7 +372,7 @@ public class mainControl implements Initializable{
   @FXML
   void opcaoSelecionada(MouseEvent event) {
     setOffOn(screen, 1);
-    setOffOn(iniciar, 0);
+    setOffOn(start, 0);
     startProgram();
   }//fim do metodo opcaoSelecionada
 
@@ -403,7 +403,7 @@ public class mainControl implements Initializable{
     if (nodeReceiver != -1 && nodeSender != -1) {
       nodes.get(nodeSender - 1).getShortestPath(); // Chama o Metodo para Calcular o Menor Caminho
       setOffOn(startButton, 0);
-      setOffOn(menorCaminhoIMG, 1);
+      setOffOn(shorterPathImg, 1);
     } else {
      showAlert("Erro!","Selecione o Transmissor e/ou Receptor");
     }
@@ -427,17 +427,14 @@ public class mainControl implements Initializable{
 
     resetVariables();
 
-    setOffOn(menorCaminhoIMG, 0);
+    setOffOn(shorterPathImg, 0);
     setOffOn(background, 1);
     setOffOn(screen, 0);
     setOffOn(startButton, 0);
     setOffOn(resetButton, 0);
     setOffOn(selectReceiver, 0);
     setOffOn(selectSender, 0);
-    setOffOn(iniciar, 1);
-
-    Nodes routers = new Nodes();
-    routers.resetRoutingTable();
+    setOffOn(start, 1);
   }//fim do metodo reset()
 
   /* ******************************************************************
@@ -459,8 +456,8 @@ public class mainControl implements Initializable{
     received = false;
     receiverId.setText(null);
     senderId.setText(null);
-    caminho.setText(null);
-    custoDoCaminho.setText(null);
+    pathText.setText(null);
+    pathCostText.setText(null);
   }//fim do metodo resetVariables()
 
   /* ******************************************************************
@@ -472,12 +469,12 @@ public class mainControl implements Initializable{
   public void buttonEffects(){
     color.setBrightness(0.5);
 
-    iniciar.setOnMouseEntered(event -> {
-      iniciar.setEffect(color);
+    start.setOnMouseEntered(event -> {
+      start.setEffect(color);
     });
 
-    iniciar.setOnMouseExited(event -> {
-      iniciar.setEffect(null);
+    start.setOnMouseExited(event -> {
+      start.setEffect(null);
     });
 
     startButton.setOnMouseEntered(event -> {
@@ -555,7 +552,7 @@ public class mainControl implements Initializable{
     for (int i = 0; i < nodes.size(); i++) {
       Nodes currentNode = nodes.get(i);
 
-      if (!currentNode.getVisitado()) {
+      if (!currentNode.getVisited()) {
         unvisitedNodesExist = true;
         int distance = currentNode.getDistance();
 
@@ -579,9 +576,9 @@ public class mainControl implements Initializable{
       //construindo o menor caminho em ASCII
       while (nodeSender - 1 != originRouter) {
         //converte o predecessor para uma letra ASCII
-        char previous = (char) (nodes.get(originRouter).getPredecessor() + 64);
+        char previous = (char) (nodes.get(originRouter).getPrevious() + 64);
         pathBuilder.insert(0, " -> " + previous);
-        originRouter = nodes.get(originRouter).getPredecessor() - 1;
+        originRouter = nodes.get(originRouter).getPrevious() - 1;
         pathIndex.add(originRouter);
       }
   
@@ -644,7 +641,7 @@ public class mainControl implements Initializable{
     }
 
     for (Nodes router : nodes) {
-      router.setOpacityGui();
+      router.setOpacityInterface();
     }
   }//fim do metodo updateOpacity
 
@@ -656,12 +653,12 @@ public class mainControl implements Initializable{
   * Retorno: void
   ****************************************************************** */
   public void showShortestPath(StringBuilder pathBuilder){
-    menorCaminhoIMG.setVisible(true);
-    menorCaminhoIMG.setDisable(false);
-    caminho.setText(pathBuilder.toString());
-    caminho.setVisible(true);
-    caminho.setDisable(false);
-    custoDoCaminho.setText(String.valueOf(nodes.get(nodeReceiver-1).getDistance()));
+    shorterPathImg.setVisible(true);
+    shorterPathImg.setDisable(false);
+    pathText.setText(pathBuilder.toString());
+    pathText.setVisible(true);
+    pathText.setDisable(false);
+    pathCostText.setText(String.valueOf(nodes.get(nodeReceiver-1).getDistance()));
   }//fim do metodo showShortestPath()
 
   /* ******************************************************************

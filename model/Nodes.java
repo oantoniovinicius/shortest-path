@@ -1,19 +1,16 @@
 /* ***************************************************************
 * Autor............: Antonio Vinicius Silva Dutra
 * Matricula........: 202110810
-* Inicio...........: 27/08/2024
-* Ultima alteracao.: 08/08/2024
+* Inicio...........: 20/09/2024
+* Ultima alteracao.: 21/09/2024
 * Nome.............: Nodes.java
 * Funcao...........: classe responsavel por gerenciar os roteadores. 
-Isso inclui as informacoes do roteador, suas conexoes, criacao e replicacao de pacotes,
+Isso inclui as informacoes do roteador, suas conexoes, criacao e encaminhamento de pacotes,
 verificacoes, etc
 ****************************************************************/
-
 package model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import control.mainControl;
 import javafx.scene.control.Label;
 import javafx.scene.shape.Polyline;
@@ -24,13 +21,12 @@ public class Nodes {
   private ArrayList<Integer> nodeConnection = new ArrayList<>(); // conexoes do roteador
   private ArrayList<Polyline> pathConnection = new ArrayList<>(); // caminho em px desse roteador ate o outro roteador que ele conecta
   private ArrayList<Packets> packetsCreated = new ArrayList<>(); // pacotes gerados por esse roteador
-  boolean controlRecebimento = false;
-  private Map<Integer, Boolean> routingTable = new HashMap<>();
-  private ArrayList<Label> pesosCaminho = new ArrayList<>(); // Caminho em px desse roteador ate o No que ele conecta
+  boolean receive = false;
+  private ArrayList<Label> pathCost = new ArrayList<>(); // caminho em do roteador atual ate o roteador conectado a ele
   Packets packet;
   private int distance = -1;
-  private int Predecessor = -1;
-  private boolean visitado = false;
+  private int previous = -1;
+  private boolean visited = false;
 
   public Nodes(){
     this.id = 0;
@@ -59,34 +55,54 @@ public class Nodes {
   public void addConnection(int connected, Polyline route, Label peso){
     nodeConnection.add(connected);
     pathConnection.add(route);
-    pesosCaminho.add(peso);
+    pathCost.add(peso);
   } //fim do metodo addConnection
 
+  
+  /* ******************************************************************
+  * Metodo: getShortestPath()
+  * Funcao: calcula e atualiza o menor caminho a partir do roteador atual para seus roteadores conectados. 
+  Ele ajusta a distancia minima dos roteadores nao visitados, marca o roteador atual como visitado, e, 
+  ao final, chama o controlador principal para encontrar o proximo roteador com a menor distancia para continuar o calculo
+  * Parametros: null
+  * Retorno: void
+  ****************************************************************** */
   public void getShortestPath() {
     ArrayList<Nodes> aux = mainController.getNodes(); 
 
-    if (mainController.getNodeSender() == this.id) {
+    if (mainController.getNodeSender() == this.id) { //se o roteador atual for ele mesmo a distancia eh zero
       distance = 0;
     }
-    setVisitado(true); // if roteador ja foi visitado
+    setVisited(true); // if roteador ja foi visitado
 
-    for (int i = 0; i < nodeConnection.size(); i++) { //buscando prox roteador
-      int index = nodeConnection.get(i) - 1; // obtem o roteador que esse roteador conecta
+    processConnectedNodes(aux);
 
-      if (!aux.get(index).getVisitado()) { // verifica se o roteador ja foi visitado
+    mainController.findShorterPath(); //verifica qual a menor distancia, para calcular ela
+  }//fim do metodo getShortestPath()
 
-        int distanceFinal = getDistance() + Integer.parseInt(pesosCaminho.get(i).getText());
+  /* ******************************************************************
+  * Metodo: processConnectedNodes(ArrayList<Nodes> nodesList)
+  * Funcao: processa todos os roteadores conectados
+  * Parametros: ArrayList<Nodes> nodesList = lista de roteadores
+  * Retorno: void
+  ****************************************************************** */
+  public void processConnectedNodes(ArrayList<Nodes> nodesList) {
+    for (int connectionIndex = 0; connectionIndex < nodeConnection.size(); connectionIndex++) {
+      int connectedNodeIndex = nodeConnection.get(connectionIndex) - 1;
 
-        // Verifica se a distancia no prox no eh maior, caso seja, essa menor eh setada
-        if (aux.get(index).getDistance() > distanceFinal || aux.get(index).getDistance() == -1) {
-          aux.get(index).setDistance(distanceFinal);
-          aux.get(index).setPredecessor(this.id);// Seta o Pai dele no menor caminho
+      Nodes connectedNode = nodesList.get(connectedNodeIndex);
+
+      // Somente processa se o roteador nao foi visitado
+      if (!connectedNode.getVisited()) {
+        int newDistance = getDistance() + Integer.parseInt(pathCost.get(connectionIndex).getText());
+
+        if (newDistance < connectedNode.getDistance() || connectedNode.getDistance() == -1) {
+          connectedNode.setDistance(newDistance);
+          connectedNode.setPrevious(this.id); // define o predecessor
         }
       }
     }
-    mainController.findShorterPath(); // Verifica qual a menor distancia, para calcular ela
-  }
-
+  }//fim do metodo processConnectedNodes()
   
   /********************************************************************
   * Metodo: sendPackets(int TTL, int firstNode)
@@ -118,33 +134,30 @@ public class Nodes {
   * Retorno: void
   ****************************************************************** */
   private void receivePacket() {
-    if (!controlRecebimento) {
+    if (!receive) {
       char letter = (char) (id + 64);
       System.out.println("Roteador [ " + Character.toString(letter) + " ] recebeu o Pacote");
-      controlRecebimento = true;
+      receive = true;
       mainController.packetReceived(this.id);
       mainController.setReceived(true);
     }
-  } //fim do metodo receivePacket()
+  } //fim do metodo receivePacket()]
 
   /* *******************************************************************
-  * Metodo: resetRoutingTable()
-  * Funcao: Reseta a tabela de roteamento limpando todas as entradas
-  * Parametros: Nenhum
+  * Metodo: adjustInterface()
+  * Funcao: ajusta a opacidade das conexoes visuais entre os roteadores na interface grafica. 
+  Ele deixa totalmente visiveis as conexoes e os pesos especificos dos caminhos relacionados ao indice fornecido ou ao predecessor do roteador atual
+  * Parametros: int indice = indice dos pesos e conexoes
   * Retorno: void
   ****************************************************************** */
-  public void resetRoutingTable() {
-    routingTable.clear();
-  } //fim do metodo resetRoutingTable()
-
   public void ajustInterface(int indice) {
     for (int i = 0; i < pathConnection.size(); i++) {
-      if (i == indice || nodeConnection.get(i) == Predecessor) {
+      if (i == indice || nodeConnection.get(i) == previous) {
         pathConnection.get(i).setOpacity(1);
-        pesosCaminho.get(i).setOpacity(1);
+        pathCost.get(i).setOpacity(1);
       }
     }
-  }
+  } //fim do metodo adjustInterface()
 
   /* ******************************************************************
   * Metodo: stopPackages()
@@ -161,12 +174,18 @@ public class Nodes {
     packetsCreated.clear();
   }//fim do metodo stopPackages()
 
-  public void setOpacityGui() {
+  /* ******************************************************************
+  * Metodo: setOpacityInterface()
+  * Funcao: ajusta a opacidade de todos os caminhos e pesos associados ao roteador
+  * Parametros: nenhum
+  * Retorno: void
+  ****************************************************************** */
+  public void setOpacityInterface() {
     for (int i = 0; i < pathConnection.size(); i++) {
       pathConnection.get(i).setOpacity(0.15);
-      pesosCaminho.get(i).setOpacity(0.15);
+      pathCost.get(i).setOpacity(0.15);
     }
-  }
+  }//fim do metodo setOpacityGui()
 
   public void setDistance(int distancia) {
     distance = distancia;
@@ -176,20 +195,20 @@ public class Nodes {
     return distance;
   }
 
-  public int getPredecessor() {
-    return Predecessor;
+  public int getPrevious() {
+    return previous;
   }
 
-  public void setVisitado(boolean visitado) {
-    this.visitado = visitado;
+  public void setVisited(boolean visitado) {
+    this.visited = visitado;
   }
 
-  public boolean getVisitado() {
-    return visitado;
+  public boolean getVisited() {
+    return visited;
   }
   
-  public void setPredecessor(int predecessor) {
-    Predecessor = predecessor;
+  public void setPrevious(int predecessor) {
+    previous = predecessor;
   }
 
   public ArrayList<Integer> getNodeConnection() {
