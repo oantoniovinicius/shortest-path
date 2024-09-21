@@ -38,7 +38,7 @@
             </ImageView>
             <ImageView fx:id="shorterPathImg" fitHeight="62.0" fitWidth="242.0" layoutX="603.0" layoutY="35.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@../imgs/menorCaminhoIMG.png" />
+                  <Image url="@../imgs/shorterPathImg.png" />
                </image>
             </ImageView>
             <Label fx:id="receiverId" alignment="CENTER" contentDisplay="CENTER" layoutX="103.0" layoutY="230.0" prefHeight="30.0" prefWidth="37.0" textFill="WHITE">
@@ -78,13 +78,23 @@
                   <Image url="@../imgs/background.png" />
                </image>
             </ImageView>
-            <ImageView fx:id="iniciar" disable="true" fitHeight="13.0" fitWidth="84.0" layoutX="411.0" layoutY="389.0" onMouseClicked="#opcaoSelecionada" pickOnBounds="true" preserveRatio="true" visible="false">
+            <ImageView fx:id="start" disable="true" fitHeight="13.0" fitWidth="84.0" layoutX="411.0" layoutY="389.0" onMouseClicked="#opcaoSelecionada" pickOnBounds="true" preserveRatio="true" visible="false">
                <image>
                   <Image url="@../imgs/iniciar.png" />
                </image>
                <cursor>
                   <Cursor fx:constant="HAND" />
                </cursor>
+            </ImageView>
+            <ImageView fx:id="aboutButton" fitHeight="30.0" fitWidth="32.0" layoutX="816.0" layoutY="34.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../imgs/helpButton.png" />
+               </image>
+            </ImageView>
+            <ImageView fx:id="aboutScreen" fitHeight="400.0" fitWidth="596.0" layoutX="157.0" layoutY="100.0" pickOnBounds="true" preserveRatio="true" visible="false">
+               <image>
+                  <Image url="@../imgs/aboutScreen.png" />
+               </image>
             </ImageView>
          </children>
       </Group>

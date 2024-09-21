@@ -39,14 +39,15 @@ public class mainControl implements Initializable{
   @FXML private ImageView background;
   @FXML private ImageView screen;
   @FXML private ImageView shorterPathImg;
+  @FXML private ImageView aboutScreen;
 
   @FXML private ImageView node;
   @FXML private ImageView nodeSent;
   @FXML private ImageView nodeReceive;
 
-  @FXML private ImageView sendButton;
   @FXML private ImageView start;
   @FXML private ImageView resetButton;
+  @FXML private ImageView aboutButton;
   @FXML private ImageView startButton;
   @FXML private ImageView selectSender;
   @FXML private ImageView selectReceiver;
@@ -92,7 +93,7 @@ public class mainControl implements Initializable{
     setOffOn(selectReceiver, 0);
     setOffOn(screen, 0);
 
-  }
+  }//fim do metodo initialize()
     
   /* ******************************************************************
   * Metodo: readBackbone()
@@ -130,7 +131,7 @@ public class mainControl implements Initializable{
       showAlert("Aviso!", "Ocorreu um erro ao ler o arquivo!");
       return false;
     }
-  }
+  }//fim do metodo readBackbone()
 
   /* ******************************************************************
   * Metodo: addNode
@@ -152,7 +153,7 @@ public class mainControl implements Initializable{
     } else {
       showAlert("Erro!", "O número de roteadores deve ser menor ou igual a 20!");
     }
-  }
+  }//fim do metodo addNode()
 
   /* ******************************************************************
   * Metodo: createCircles
@@ -373,6 +374,7 @@ public class mainControl implements Initializable{
   void opcaoSelecionada(MouseEvent event) {
     setOffOn(screen, 1);
     setOffOn(start, 0);
+    setOffOn(aboutButton, 0);
     startProgram();
   }//fim do metodo opcaoSelecionada
 
@@ -401,7 +403,7 @@ public class mainControl implements Initializable{
   @FXML
   void clickStart(MouseEvent event) {
     if (nodeReceiver != -1 && nodeSender != -1) {
-      nodes.get(nodeSender - 1).getShortestPath(); // Chama o Metodo para Calcular o Menor Caminho
+      nodes.get(nodeSender - 1).getShortestPath(); // chama o Metodo pra calcular o menor Caminho
       setOffOn(startButton, 0);
       setOffOn(shorterPathImg, 1);
     } else {
@@ -435,6 +437,7 @@ public class mainControl implements Initializable{
     setOffOn(selectReceiver, 0);
     setOffOn(selectSender, 0);
     setOffOn(start, 1);
+    setOffOn(aboutButton, 1);
   }//fim do metodo reset()
 
   /* ******************************************************************
@@ -491,6 +494,14 @@ public class mainControl implements Initializable{
 
     resetButton.setOnMouseExited(event -> {
       resetButton.setEffect(null);
+    });
+
+    aboutButton.setOnMouseEntered(event -> {
+      aboutScreen.setVisible(true);
+    });
+
+    aboutButton.setOnMouseExited(event -> {
+      aboutScreen.setVisible(false);
     });
   }//fim do metodo buttonEffects()
 

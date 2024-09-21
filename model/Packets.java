@@ -61,7 +61,7 @@ public class Packets extends Thread{
     if(nodeSender > nodeReceiver){
       invertRoute = true; //inverte a rota se o roteador de origem tiver ID maior que o de destino
     }
-  }
+  }//fim do construtor Packets()
   
   /* ******************************************************************
   * Metodo: sendPacket
@@ -83,19 +83,19 @@ public class Packets extends Thread{
     }
 
     Platform.runLater(() -> {
-        Root.getChildren().add(packet);
-        pathTransition.setNode(packet);
-        pathTransition.setPath(path);
-        pathTransition.setDuration(Duration.millis(1000)); // define a duracao da animacao
-        pathTransition.play();
-        pathTransition.setOnFinished(event -> {
-          if(controlFinished){
-            packet.setVisible(false);
-            mainController.getNodes().get(nodeReceiver-1).sendPackets(shorterPath); // Roteador Recebeu o No
-          }
-        });
+      Root.getChildren().add(packet);
+      pathTransition.setNode(packet);
+      pathTransition.setPath(path);
+      pathTransition.setDuration(Duration.millis(1000)); // define a duracao da animacao
+      pathTransition.play();
+      pathTransition.setOnFinished(event -> {
+        if(controlFinished){
+          packet.setVisible(false);
+          mainController.getNodes().get(nodeReceiver-1).sendPackets(shorterPath); // Roteador Recebeu o No
+        }
       });
-  }
+    });
+  }//fim do metodo sendPacket()
 
   /* ******************************************************************
   * Metodo: run
@@ -106,7 +106,7 @@ public class Packets extends Thread{
   @Override
   public void run() {
     sendPacket();
-  }
+  }//fim do metodo Run()
 
 
   /* ******************************************************************
@@ -119,7 +119,7 @@ public class Packets extends Thread{
     pathTransition.stop();
     packet.setVisible(false);
     packet.setDisable(true);
-  }
+  }//fim do metodo breakAnimation()
 
   //Getter and setters
   public void setControlFinished(boolean controlFinished) {
