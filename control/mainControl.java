@@ -24,13 +24,11 @@ import javafx.scene.Cursor;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Label;
-import javafx.scene.control.Spinner;
-import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.effect.ColorAdjust;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -38,8 +36,6 @@ import javafx.scene.shape.Polyline;
 import javafx.scene.text.Text;
 
 public class mainControl implements Initializable{
-  @FXML private ImageView helpScreen;
-  @FXML private ImageView aboutScreen;
   @FXML private ImageView background;
   @FXML private ImageView screen;
   @FXML private ImageView menorCaminhoIMG;
@@ -48,9 +44,6 @@ public class mainControl implements Initializable{
   @FXML private ImageView nodeSent;
   @FXML private ImageView nodeReceive;
 
-  @FXML private ImageView helpButton;
-  @FXML private ImageView aboutButton;
-  @FXML private ImageView closeButton;
   @FXML private ImageView sendButton;
   @FXML private ImageView iniciar;
   @FXML private ImageView resetButton;
@@ -58,11 +51,11 @@ public class mainControl implements Initializable{
   @FXML private ImageView selectSender;
   @FXML private ImageView selectReceiver;
 
-  @FXML private Label totalPackages;
   @FXML private Label senderId;
   @FXML private Label receiverId;
 
   @FXML private Text caminho;
+  @FXML private Text custoDoCaminho;
 
   ArrayList<String> graph = new ArrayList<>(); //roteadores do Grafo para leitura do txt e implementacao visual
   ArrayList<Nodes> nodes = new ArrayList<>(); //roteadores
@@ -71,17 +64,14 @@ public class mainControl implements Initializable{
   ArrayList<Label> numbers = new ArrayList<>(); //numero dos Roteadores
   ArrayList<Label> pesoConexoes = new ArrayList<>(); // Numero dos Roteadores
 
-  int versionSelected = 0;
-  int TTL = 1;
   int nodeSender = -1;
   int nodeReceiver = -1;
-  int totalPackets = 0;
   
   boolean received = false;
   boolean graphFlag = true;
 
   Pane root = new Pane();
-  ColorAdjust colorAdjust = new ColorAdjust();
+  ColorAdjust color = new ColorAdjust();
 
   /* ******************************************************************
   * Metodo: initialize()
@@ -206,8 +196,9 @@ public class mainControl implements Initializable{
   private void createLabels(Pane root, ArrayList<Circle> routers) {
     for (int i = 0; i < routers.size(); i++) {
         Circle node = routers.get(i);
-        double labelX = node.getCenterX() - 12;
-        double labelY = node.getCenterY() + 28;
+        DropShadow ds = new DropShadow();
+        double labelX = node.getCenterX() - 10;
+        double labelY = node.getCenterY() - 5;
 
         char letter = (char) (i + 65);
 
@@ -215,7 +206,13 @@ public class mainControl implements Initializable{
         label.setLayoutX(labelX);
         label.setLayoutY(labelY);
         label.setStyle("-fx-font-size: 6pt; " + "-fx-font-weight: bold;");
-        label.setTextFill(Color.BLACK);
+        label.setTextFill(Color.WHITE);
+        ds.setColor(Color.BLACK);
+        ds.setOffsetX(0);
+        ds.setOffsetY(0);
+        ds.setRadius(3);
+        label.setEffect(ds); 
+
         numbers.add(label);
     }
   }
@@ -313,7 +310,8 @@ public class mainControl implements Initializable{
       final int posicao = i; // armazena a posicao atual do loop
       nodeImage.get(i).setOnMouseClicked(event -> {
         int id = posicao+1;
-        System.out.println("Transmissor [ " + id + " ] selecionado."); // informa o id do roteador escolhido
+        char letterAux = (char) (id + 64);
+        System.out.println("Transmissor [ " + Character.toString(letterAux) + " ] selecionado."); // informa o id do roteador escolhido
 
         setNodeInicial(id); // setando o valor do roteador transmissor
         nodeImage.get(posicao).setImage(new Image("./imgs/nodeSender.png"));
@@ -323,7 +321,8 @@ public class mainControl implements Initializable{
           imageView.setCursor(null);
         }
         //seta na label da interface qual o id do transmissor
-        senderId.setText(Integer.toString(getNodeSender()));
+        char letter = (char) (getNodeSender() + 64);
+        senderId.setText(Character.toString(letter));
 
         setOffOn(selectSender, 0);
         selectFinalNode();
@@ -346,7 +345,8 @@ public class mainControl implements Initializable{
         final int posicao = i; // armazena a posicao atual do loop
         nodeImage.get(i).setOnMouseClicked(event -> {
           int id = posicao + 1;
-          System.out.println("Receptor [ " + id + " ] selecionado."); //informa o id do roteador escolhido
+          char letterAux = (char) (id + 64);
+          System.out.println("Receptor [ " + Character.toString(letterAux) + " ] selecionado.\n"); //informa o id do roteador escolhido
 
           setNodeFinal(id); // setando o valor do roteador receptor
           nodeImage.get(posicao).setImage(new Image("./imgs/nodeReceiver.png"));
@@ -357,7 +357,8 @@ public class mainControl implements Initializable{
           }
 
           //seta na label da interface qual o id do receptor
-          receiverId.setText(Integer.toString(getNodeReceiver()));
+          char letter = (char) (getNodeReceiver() + 64);
+          receiverId.setText(Character.toString(letter));
 
           setOffOn(selectReceiver, 0);
           setOffOn(startButton, 1);
@@ -398,7 +399,7 @@ public class mainControl implements Initializable{
   @FXML
   void clickStart(MouseEvent event) {
     if (nodeReceiver != -1 && nodeSender != -1) {
-      nodes.get(nodeSender - 1).calcularMenorCaminho(); // Chama o Metodo para Calcular o Menor Caminho
+      nodes.get(nodeSender - 1).getShortestPath(); // Chama o Metodo para Calcular o Menor Caminho
       setOffOn(startButton, 0);
       setOffOn(menorCaminhoIMG, 1);
     } else {
@@ -406,31 +407,6 @@ public class mainControl implements Initializable{
     }
   }
 
-   /* ******************************************************************
-  * Metodo: aboutButton
-  * Funcao: mostra a tela com as informacoes sobre a versao 4
-  * Parametros: 
-    - Mouse event -> clique do mouse no botao
-  * Retorno: void
-  ****************************************************************** */
-  @FXML
-  void aboutButton(MouseEvent event) {
-    setOffOn(aboutScreen, 1);
-    setOffOn(closeButton, 1);
-  }
-
-  /* ******************************************************************
-  * Metodo: closeButton
-  * Funcao: fecha a tela com as informacoes sobre a versao 4
-  * Parametros: 
-    - Mouse event -> clique do mouse no botao
-  * Retorno: void
-  ****************************************************************** */
-  @FXML
-  void closeButton(MouseEvent event) {
-    setOffOn(aboutScreen, 0);
-    setOffOn(closeButton, 0);
-  }
 
   /* ******************************************************************
   * Metodo: reset
@@ -475,16 +451,14 @@ public class mainControl implements Initializable{
     nodeImage = new ArrayList<>();
     lines = new ArrayList<>();
     numbers = new ArrayList<>(); 
-    versionSelected = 0;
-    TTL = -1;
     nodeSender = -1;
     nodeReceiver = -1;
-    totalPackets = 0;
     graphFlag = true;
     received = false;
-    totalPackages.setText(null);
     receiverId.setText(null);
     senderId.setText(null);
+    caminho.setText(null);
+    custoDoCaminho.setText(null);
   }
 
   /* ******************************************************************
@@ -494,40 +468,32 @@ public class mainControl implements Initializable{
   * Retorno: void
   ****************************************************************** */
   public void buttonEffects(){
-    colorAdjust.setBrightness(1);
+    color.setBrightness(0.5);
 
+    iniciar.setOnMouseEntered(event -> {
+      iniciar.setEffect(color);
+    });
+
+    iniciar.setOnMouseExited(event -> {
+      iniciar.setEffect(null);
+    });
 
     startButton.setOnMouseEntered(event -> {
-      startButton.setEffect(colorAdjust);
+      startButton.setEffect(color);
     });
 
     startButton.setOnMouseExited(event -> {
       startButton.setEffect(null);
     });
 
-    helpButton.setOnMouseEntered(event -> {
-      helpScreen.setVisible(true);
-    });
-
-    helpButton.setOnMouseExited(event -> {
-      helpScreen.setVisible(false);
-    });
-
     resetButton.setOnMouseEntered(event -> {
-      resetButton.setEffect(colorAdjust);
+      resetButton.setEffect(color);
     });
 
     resetButton.setOnMouseExited(event -> {
       resetButton.setEffect(null);
     });
 
-    iniciar.setOnMouseEntered(event -> {
-      iniciar.setEffect(colorAdjust);
-    });
-
-    iniciar.setOnMouseExited(event -> {
-      iniciar.setEffect(null);
-    });
   }
 
   /* ******************************************************************
@@ -551,18 +517,6 @@ public class mainControl implements Initializable{
     }
   }
 
-  /* ******************************************************************
-  * Metodo: addPackets
-  * Funcao: incrementa o numero total de pacotes gerados e seta o valor deles na interface
-  * Parametros: Nenhum
-  * Retorno: void
-  ****************************************************************** */
-  public void addPackets(){ 
-    if(!received){
-      totalPackets++;
-      totalPackages.setText(Integer.toString(totalPackets));
-    }
-  }
 
   /* ******************************************************************
   * Metodo: packetReceived
@@ -573,99 +527,102 @@ public class mainControl implements Initializable{
   ****************************************************************** */
   public void packetReceived(int node){
     nodeImage.get(node-1).setImage(new Image("./imgs/packetReceived.png"));
+
+    for (Label label : numbers) {
+      root.getChildren().remove(label);
+    }
   }
 
-  public void encontrarMenorDistancia() {
-    
-    boolean todosVisitados = false; // verifica se todos nos ja foram visitados ou nao
-    int menorValor = 99999;// Assume um valor Exorbitante como o Menor Inicialmente
-    int indiceMenorValor = 0; // Armazena o índice do menor valor
+  public void findShorterPath() {
+    boolean verify = false; // verifica se todos os roteadores ja foram visitados
+    int highValue = 99999;
+    int lowIndex = 0;
 
-    // Percorre a lista para encontrar o menor valor e seu índice
+    // Percorre a lista para encontrar o menor valor e seu indice
     for (int i = 0; i < nodes.size(); i++) {
       if(!nodes.get(i).getVisitado()){
-        todosVisitados = true;
-        int valorAtual = nodes.get(i).getDistancia();
-        if (valorAtual < menorValor && valorAtual != -1) {
-          menorValor = valorAtual;
-          indiceMenorValor = i;
+        verify = true;
+        int value = nodes.get(i).getDistance();
+        if (value < highValue && value != -1) {
+          highValue = value;
+          lowIndex = i;
         }
       }
     }
-    if(todosVisitados){
-      nodes.get(indiceMenorValor).calcularMenorCaminho(); //Chama o roteador com o Menor Caminho
+    if(verify){
+      nodes.get(lowIndex).getShortestPath(); // chama o roteador com o menor caminho
     }
     else{
       for (Nodes x : nodes) {
-        System.out.println("ID DO ROTEADOR [ "+ x.getId() + " ] Sua Distancia do No Inicial [ "+ x.getDistancia()+" ]"+ " Seu Predecessor [ "+ x.getPredecessor() + " ]");
+        char letter = (char) (x.getId() + 64);
+        System.out.println("Distancia do Roteador [ "+ Character.toString(letter) + " ] ate o roteador inicial: [ "+ x.getDistance() + " ]");
       }
-      UpdateGUImostrarMenorCaminho();
-      
+      shortestPath();
     }
 }
 
-public void UpdateGUImostrarMenorCaminho() {
-  ArrayList<Integer> auxGUI = new ArrayList<>();
+public void shortestPath() {
+  ArrayList<Integer> aux = new ArrayList<>();
 
-  StringBuilder menorCaminho = new StringBuilder();
-  int nodePai = nodeReceiver - 1;
+  StringBuilder shortestPath = new StringBuilder();
+  int originRouter = nodeReceiver - 1;
 
   // Construindo o menor caminho
-  while (nodeSender - 1 != nodePai) {
+  while (nodeSender - 1 != originRouter) {
       // Converte o predecessor para uma letra (ASCII)
-      char predecessorChar = (char) (nodes.get(nodePai).getPredecessor() + 64);
-      menorCaminho.insert(0, " -> " + predecessorChar);
-      nodePai = nodes.get(nodePai).getPredecessor() - 1;
-      auxGUI.add(nodePai);
+      char previous = (char) (nodes.get(originRouter).getPredecessor() + 64);
+      shortestPath.insert(0, " -> " + previous);
+      originRouter = nodes.get(originRouter).getPredecessor() - 1;
+      aux.add(originRouter);
   }
   
-  // Adiciona o nó receptor como a última letra
-  menorCaminho.append(" -> " + (char) (nodeReceiver + 64));
-  menorCaminho.delete(0, 4);  // Remove o primeiro " -> "
+  shortestPath.append(" -> " + (char) (nodeReceiver + 64));
+  shortestPath.delete(0, 4);  // Remove o primeiro " -> "
 
-  System.out.println("Menor caminho: " + menorCaminho.toString());
+  System.out.println("");
+  System.out.println("Menor caminho: " + shortestPath.toString());
 
-  auxGUI.add(nodeReceiver - 1);
+  aux.add(nodeReceiver - 1);
 
-  // Ajusta a opacidade das imagens de nós não pertencentes ao menor caminho
+  // ajusta a opacidade das imagens de roteadores nao pertencentes ao menor caminho
   for (int i = 0; i < nodeImage.size(); i++) {
-      ImageView imageView = nodeImage.get(i);  // Obtém a ImageView atual
-      if (!auxGUI.contains(i)) {
-          imageView.setOpacity(0.15);  // Ajusta a opacidade da imagem
+      ImageView imageView = nodeImage.get(i);  // obtem a ImageView atual
+      if (!aux.contains(i)) {
+          imageView.setOpacity(0.15);  // ajusta a opacidade da imagem
       }
   }
 
-  // Ajusta a opacidade das labels de nós não pertencentes ao menor caminho
+  // Ajusta a opacidade das labels deroteadores nao pertencentes ao menor caminho
   for (int i = 0; i < numbers.size(); i++) {
-      Label label = numbers.get(i);  // Obtém a Label atual
-      if (!auxGUI.contains(i)) {
-          label.setOpacity(0.15);  // Ajusta a opacidade da label
+      Label label = numbers.get(i);  // obtem a Label atual
+      if (!aux.contains(i)) {
+          label.setOpacity(0.15);  // ajusta a opacidade da label
       }
   }
 
-  // Ajusta a opacidade dos roteadores na GUI
+  // ajusta a opacidade dos roteadores na GUI
   for (Nodes router : nodes) {
       router.setOpacityGui();
   }
 
-  // Divide o menor caminho em uma lista de letras
-  String[] numerosString = menorCaminho.toString().split(" -> ");
+  // divide o menor caminho em uma lista de letras
+  String[] numerosString = shortestPath.toString().split(" -> ");
   ArrayList<Integer> numeros = new ArrayList<>();
   
   for (String numeroString : numerosString) {
-      // Converte a letra de volta para o número correspondente
+      // Converte a letra de volta para o numero correspondente
       int numero = numeroString.charAt(0) - 64;
       numeros.add(numero);
   }
 
-  // Ajusta a visualização das conexões
+  // Ajusta a visualizacao das conexoes
   for (int i = 0; i < numeros.size() - 1; i++) {
       ArrayList<Integer> nos = nodes.get(numeros.get(i) - 1).getNodeConnection();
-      int indiceEncontrado = -1;  // Inicializa com -1 para indicar que nenhum índice foi encontrado
+      int indiceEncontrado = -1;  // Inicializa com -1 para indicar que nenhum indice foi encontrado
       for (int j = 0; j < nos.size(); j++) {
           if (nos.get(j).equals(numeros.get(i + 1))) {
               indiceEncontrado = j;
-              break;  // Se encontrar o índice, não é necessário continuar procurando
+              break;  // Se encontrar o indice, nao eh necessário continuar procurando
           }
       }
       nodes.get(numeros.get(i) - 1).ajusteVisualizacaoGUI(indiceEncontrado);
@@ -674,13 +631,14 @@ public void UpdateGUImostrarMenorCaminho() {
   // Mostra o caminho final em ASCII na interface
   menorCaminhoIMG.setVisible(true);
   menorCaminhoIMG.setDisable(false);
-  caminho.setText(menorCaminho.toString());
+  caminho.setText(shortestPath.toString());
   caminho.setVisible(true);
   caminho.setDisable(false);
+  custoDoCaminho.setText(String.valueOf(nodes.get(nodeReceiver-1).getDistance()));
 
   // Envia os pacotes no caminho
   nodes.get(nodeSender - 1).sendPackets(numeros);
-}
+  }
 
   /* ******************************************************************
   * Metodo: startProgram()
@@ -725,6 +683,7 @@ public void UpdateGUImostrarMenorCaminho() {
     setOffOn(background, 0);
     setOffOn(selectSender, 1);
     setOffOn(resetButton, 1);
+    setOffOn(startButton, 1);
   }
 
   //getters and setters
@@ -742,14 +701,6 @@ public void UpdateGUImostrarMenorCaminho() {
 
   public Pane getRoot(){
     return root;
-  }
-
-  public void setVersionSelected(int versionSelected){
-    this.versionSelected = versionSelected;
-  }
-
-  public int getVersionSelected(){
-    return versionSelected;
   }
 
   public void setNodeFinal(int nodeFinal) {

@@ -32,7 +32,7 @@ public class Packets extends Thread{
   private Polyline pathToGo; //caminho que o pacote vai percorrer na interface, em pixels
   private ImageView packet; //imagem do pacote
   private Pane Root; //referencia ao painel raiz onde o pacote sera exibido
-  mainControl mC = new mainControl(); //controlador principal da aplicacao
+  mainControl mainController = new mainControl(); //controlador principal da aplicacao
   boolean controlFinished = true; //indica se a animacao do pacote foi finalizada
   PathTransition pathTransition = new PathTransition(); //animacao do movimento do pacote
   private boolean invertRoute = false; //controla se a rota deve ser invertida ao desenhar
@@ -54,7 +54,7 @@ public class Packets extends Thread{
     nodeSender = sender;
     nodeReceiver = receiver;
     pathToGo = path;
-    mC = control;
+    mainController = control;
     menorCaminho = caminho;
 
     Root = root; 
@@ -92,7 +92,7 @@ public class Packets extends Thread{
         pathTransition.setOnFinished(event -> {
           if(controlFinished){
             packet.setVisible(false);
-            mC.getNodes().get(nodeReceiver-1).sendPackets(menorCaminho); // Roteador Recebeu o No
+            mainController.getNodes().get(nodeReceiver-1).sendPackets(menorCaminho); // Roteador Recebeu o No
           }
         });
       });

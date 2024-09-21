@@ -20,7 +20,7 @@ import javafx.scene.shape.Polyline;
 
 public class Nodes {
   private final int id;
-  mainControl mC = new mainControl();
+  mainControl mainController = new mainControl();
   private ArrayList<Integer> nodeConnection = new ArrayList<>(); // conexoes do roteador
   private ArrayList<Polyline> pathConnection = new ArrayList<>(); // caminho em px desse roteador ate o outro roteador que ele conecta
   private ArrayList<Packets> packetsCreated = new ArrayList<>(); // pacotes gerados por esse roteador
@@ -28,7 +28,7 @@ public class Nodes {
   private Map<Integer, Boolean> routingTable = new HashMap<>();
   private ArrayList<Label> pesosCaminho = new ArrayList<>(); // Caminho em px desse roteador ate o No que ele conecta
   Packets packet;
-  private int Distancia = -1;
+  private int distance = -1;
   private int Predecessor = -1;
   private boolean visitado = false;
 
@@ -45,7 +45,7 @@ public class Nodes {
   }
 
   public void setController(mainControl mainController){
-    this.mC = mainController;
+    this.mainController = mainController;
   }
 
   /* ******************************************************************
@@ -62,31 +62,29 @@ public class Nodes {
     pesosCaminho.add(peso);
   } //fim do metodo addConnection
 
-  public void calcularMenorCaminho() {
-    ArrayList<Nodes> rtd = mC.getNodes(); // ArrayAux
+  public void getShortestPath() {
+    ArrayList<Nodes> aux = mainController.getNodes(); 
 
-    if (mC.getNodeSender() == this.id) {
-      Distancia = 0; // Setando Distancia do no Inicial
+    if (mainController.getNodeSender() == this.id) {
+      distance = 0;
     }
-    setVisitado(true); // Seta No ja visitado
+    setVisitado(true); // if roteador ja foi visitado
 
-    // Busca qual eh o proximo
-    for (int i = 0; i <nodeConnection.size(); i++) {
-      int auxIndice = nodeConnection.get(i) - 1; // Pega o no que esse Roteador Conecta
+    for (int i = 0; i < nodeConnection.size(); i++) { //buscando prox roteador
+      int index = nodeConnection.get(i) - 1; // obtem o roteador que esse roteador conecta
 
-      if (!rtd.get(auxIndice).getVisitado()) { // Verifica se o No ja foi visitado
-        // Seta a distancia entre eles que eh a a distancia ate chegar no seu
-        // predecessor + a distancia ate ele
-        int distanciaAux = getDistancia() + Integer.parseInt(pesosCaminho.get(i).getText());
+      if (!aux.get(index).getVisitado()) { // verifica se o roteador ja foi visitado
+
+        int distanceFinal = getDistance() + Integer.parseInt(pesosCaminho.get(i).getText());
 
         // Verifica se a distancia no prox no eh maior, caso seja, essa menor eh setada
-        if (rtd.get(auxIndice).getDistancia() > distanciaAux || rtd.get(auxIndice).getDistancia() == -1) {
-          rtd.get(auxIndice).setDistancia(distanciaAux);
-          rtd.get(auxIndice).setPredecessor(this.id);// Seta o Pai dele no menor caminho
+        if (aux.get(index).getDistance() > distanceFinal || aux.get(index).getDistance() == -1) {
+          aux.get(index).setDistance(distanceFinal);
+          aux.get(index).setPredecessor(this.id);// Seta o Pai dele no menor caminho
         }
       }
     }
-    mC.encontrarMenorDistancia(); // Verifica qual a menor distancia, para calcular ela
+    mainController.findShorterPath(); // Verifica qual a menor distancia, para calcular ela
   }
 
   
@@ -99,11 +97,11 @@ public class Nodes {
   * Retorno: void
   ****************************************************************** */
   public void sendPackets(ArrayList<Integer> Receptor){
-      if(mC.getNodeReceiver() != this.id ){
+      if(mainController.getNodeReceiver() != this.id ){
         Receptor.remove(0);
         for (int i = 0; i < nodeConnection.size(); i++) {
           if (nodeConnection.get(i) == Receptor.get(0)) {
-            packet = new Packets(this.id, Receptor.get(0), pathConnection.get(i), mC.getRoot(), mC, Receptor);
+            packet = new Packets(this.id, Receptor.get(0), pathConnection.get(i), mainController.getRoot(), mainController, Receptor);
             packet.start();
             break;
           }
@@ -121,24 +119,13 @@ public class Nodes {
   ****************************************************************** */
   private void receivePacket() {
     if (!controlRecebimento) {
-      System.out.println("Roteador [ " + id + " ] recebeu o Pacote");
+      char letter = (char) (id + 64);
+      System.out.println("Roteador [ " + Character.toString(letter) + " ] recebeu o Pacote");
       controlRecebimento = true;
-      mC.packetReceived(this.id);
-      mC.setReceived(true);
+      mainController.packetReceived(this.id);
+      mainController.setReceived(true);
     }
   } //fim do metodo receivePacket()
-
-  /* *******************************************************************
-  * Metodo: createPacket(Packets pacote)
-  * Funcao: Cria um novo pacote, inicia sua transmissao e registra ele na lista de pacotes criados
-  * Parametros: Packets pacote = pacote a ser criado e enviado
-  * Retorno: void
-  ****************************************************************** */
-  public void createPacket(Packets pacote){
-    packetsCreated.add(pacote);
-    pacote.start();
-    mC.addPackets();
-  } //fim do metodo createPacket()
 
   /* *******************************************************************
   * Metodo: resetRoutingTable()
@@ -158,10 +145,12 @@ public class Nodes {
   * Retorno: void
   ****************************************************************** */
   public void listConnections() {
-    System.out.println("Roteador [ " + id + " ] se conecta com:");
+    char letter = (char) (id + 64);
+    System.out.println("Roteador [ " + Character.toString(letter) + " ] se conecta com:");
     for (int i = 0; i < nodeConnection.size(); i++) {
       System.out.print("Roteador ");
-      System.out.println(nodeConnection.get(i));
+      char letterAux = (char) (nodeConnection.get(i) + 64);
+      System.out.println(Character.toString(letterAux));
     }
     System.out.println("");
   } //fim do metodo listConnections()
@@ -197,12 +186,12 @@ public class Nodes {
     }
   }
 
-  public void setDistancia(int distancia) {
-    Distancia = distancia;
+  public void setDistance(int distancia) {
+    distance = distancia;
   }
 
-  public int getDistancia() {
-    return Distancia;
+  public int getDistance() {
+    return distance;
   }
 
   public int getPredecessor() {
