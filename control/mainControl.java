@@ -135,7 +135,7 @@ public class mainControl implements Initializable{
 
   /* ******************************************************************
   * Metodo: addNode
-  * Funcao: Adiciona nos / roteadores na interface grfica. Verifica se o numero de roteadores eh valido antes de prosseguir
+  * Funcao: Adiciona nos / roteadores na interface grafica. Verifica se o numero de roteadores eh valido antes de prosseguir
   * Parametros: Pane root: O painel raiz onde os componentes graficos serao adicionados.
   * Retorno: void
   ****************************************************************** */
@@ -296,7 +296,7 @@ public class mainControl implements Initializable{
 
   /* ******************************************************************
   * Metodo: selectFirstNode
-  * Funcao: Permite que o usuurio selecione o roteador transmissor na interface, desativando o clique apos a selecao.
+  * Funcao: Permite que o usuario selecione o roteador transmissor na interface, desativando o clique apos a selecao.
   * Parametros: Nenhum
   * Retorno: void
   ****************************************************************** */
@@ -574,7 +574,7 @@ public class mainControl implements Initializable{
       }
     }
 
-    // ce existirem roteadores nao visitados, chama o proximo com o menor caminho
+    // se existirem roteadores nao visitados, chama o proximo com o menor caminho
     if (unvisitedNodesExist && shortestNodeIndex != -1) {
       nodes.get(shortestNodeIndex).getShortestPath();
     } else {
