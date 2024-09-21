@@ -36,7 +36,7 @@ public class Packets extends Thread{
   boolean controlFinished = true; //indica se a animacao do pacote foi finalizada
   PathTransition pathTransition = new PathTransition(); //animacao do movimento do pacote
   private boolean invertRoute = false; //controla se a rota deve ser invertida ao desenhar
-  ArrayList<Integer> menorCaminho = new ArrayList<>();
+  ArrayList<Integer> shorterPath = new ArrayList<>();
 
   /* ******************************************************************
   * Construtor: Packets
@@ -55,7 +55,7 @@ public class Packets extends Thread{
     nodeReceiver = receiver;
     pathToGo = path;
     mainController = control;
-    menorCaminho = caminho;
+    shorterPath = caminho;
 
     Root = root; 
     packet = new ImageView(new Image("./imgs/package.png"));
@@ -87,12 +87,12 @@ public class Packets extends Thread{
         Root.getChildren().add(packet);
         pathTransition.setNode(packet);
         pathTransition.setPath(path);
-        pathTransition.setDuration(Duration.millis(2000)); // Define a duração da animação (em segundos)
+        pathTransition.setDuration(Duration.millis(1000)); // define a duracao da animacao
         pathTransition.play();
         pathTransition.setOnFinished(event -> {
           if(controlFinished){
             packet.setVisible(false);
-            mainController.getNodes().get(nodeReceiver-1).sendPackets(menorCaminho); // Roteador Recebeu o No
+            mainController.getNodes().get(nodeReceiver-1).sendPackets(shorterPath); // Roteador Recebeu o No
           }
         });
       });

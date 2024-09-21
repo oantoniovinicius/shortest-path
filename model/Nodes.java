@@ -137,25 +137,7 @@ public class Nodes {
     routingTable.clear();
   } //fim do metodo resetRoutingTable()
 
-
-  /* *******************************************************************
-  * Metodo: listConnections()
-  * Funcao: Lista as conexoes desse roteador com outros roteadores, disponiveis no backbone
-  * Parametros: Nenhum
-  * Retorno: void
-  ****************************************************************** */
-  public void listConnections() {
-    char letter = (char) (id + 64);
-    System.out.println("Roteador [ " + Character.toString(letter) + " ] se conecta com:");
-    for (int i = 0; i < nodeConnection.size(); i++) {
-      System.out.print("Roteador ");
-      char letterAux = (char) (nodeConnection.get(i) + 64);
-      System.out.println(Character.toString(letterAux));
-    }
-    System.out.println("");
-  } //fim do metodo listConnections()
-
-  public void ajusteVisualizacaoGUI(int indice) {
+  public void ajustInterface(int indice) {
     for (int i = 0; i < pathConnection.size(); i++) {
       if (i == indice || nodeConnection.get(i) == Predecessor) {
         pathConnection.get(i).setOpacity(1);

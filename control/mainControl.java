@@ -62,7 +62,7 @@ public class mainControl implements Initializable{
   ArrayList<ImageView> nodeImage = new ArrayList<>(); //imagem dos roteadores
   ArrayList<Polyline> lines = new ArrayList<>(); //linha visual que conecta os roteadores (rota)
   ArrayList<Label> numbers = new ArrayList<>(); //numero dos Roteadores
-  ArrayList<Label> pesoConexoes = new ArrayList<>(); // Numero dos Roteadores
+  ArrayList<Label> conectionCost = new ArrayList<>(); // Numero dos Roteadores
 
   int nodeSender = -1;
   int nodeReceiver = -1;
@@ -183,7 +183,7 @@ public class mainControl implements Initializable{
     }
     //createConnections(root, routers);
     return routers;
-  }
+  }//fim do metodo createCircles()
 
   /* ******************************************************************
    Metodo: createLabels
@@ -195,27 +195,27 @@ public class mainControl implements Initializable{
   ****************************************************************** */
   private void createLabels(Pane root, ArrayList<Circle> routers) {
     for (int i = 0; i < routers.size(); i++) {
-        Circle node = routers.get(i);
-        DropShadow ds = new DropShadow();
-        double labelX = node.getCenterX() - 10;
-        double labelY = node.getCenterY() - 5;
+      Circle node = routers.get(i);
+      DropShadow ds = new DropShadow();
+      double labelX = node.getCenterX() - 10;
+      double labelY = node.getCenterY() - 5;
 
-        char letter = (char) (i + 65);
+      char letter = (char) (i + 65);
 
-        Label label = new Label(Character.toString(letter));
-        label.setLayoutX(labelX);
-        label.setLayoutY(labelY);
-        label.setStyle("-fx-font-size: 6pt; " + "-fx-font-weight: bold;");
-        label.setTextFill(Color.WHITE);
-        ds.setColor(Color.BLACK);
-        ds.setOffsetX(0);
-        ds.setOffsetY(0);
-        ds.setRadius(3);
-        label.setEffect(ds); 
+      Label label = new Label(Character.toString(letter));
+      label.setLayoutX(labelX);
+      label.setLayoutY(labelY);
+      label.setStyle("-fx-font-size: 6pt; " + "-fx-font-weight: bold;");
+      label.setTextFill(Color.WHITE);
+      ds.setColor(Color.BLACK);
+      ds.setOffsetX(0);
+      ds.setOffsetY(0);
+      ds.setRadius(3);
+      label.setEffect(ds); 
 
-        numbers.add(label);
+      numbers.add(label);
     }
-  }
+  }//fim do metodo createLabels
 
   /* ******************************************************************
   * Metodo: createConnections
@@ -227,36 +227,35 @@ public class mainControl implements Initializable{
   ****************************************************************** */
   private void createConnections(Pane root, ArrayList<Circle> routers) {
     for (String line : graph) {
-        String[] parts = line.split(";");
-        if (parts.length >= 2) {
-          int nodeOne = Integer.parseInt(parts[0]);
-          int nodeTwo = Integer.parseInt(parts[1]);
-          int peso = Integer.parseInt(parts[2]);
+      String[] parts = line.split(";");
+      if (parts.length >= 2) {
+        int nodeOne = Integer.parseInt(parts[0]);
+        int nodeTwo = Integer.parseInt(parts[1]);
+        int peso = Integer.parseInt(parts[2]);
 
-          // Criando a linha de conexao entre dois roteadores
-          Polyline Line = new Polyline(
-            routers.get(nodeOne - 1).getCenterX(), routers.get(nodeOne - 1).getCenterY(),
-            routers.get(nodeTwo - 1).getCenterX(), routers.get(nodeTwo - 1).getCenterY()
-          );
-          lines.add(Line);
+        //linha que conecta dois roteadores
+        Polyline Line = new Polyline(
+          routers.get(nodeOne - 1).getCenterX(), routers.get(nodeOne - 1).getCenterY(),
+          routers.get(nodeTwo - 1).getCenterX(), routers.get(nodeTwo - 1).getCenterY()
+        );
+        lines.add(Line);
 
-          // Calculo da posicao do peso na tela (meio da linha)
-          double xPeso = (routers.get(nodeOne - 1).getCenterX() + routers.get(nodeTwo - 1).getCenterX()) / 2;
-          double yPeso = (routers.get(nodeOne - 1).getCenterY() + routers.get(nodeTwo - 1).getCenterY()) / 2;
+        //calculo de onde colocar o custo do caminho na interface
+        double xCost = (routers.get(nodeOne - 1).getCenterX() + routers.get(nodeTwo - 1).getCenterX()) / 2;
+        double yCost = (routers.get(nodeOne - 1).getCenterY() + routers.get(nodeTwo - 1).getCenterY()) / 2;
 
-          // Criando o label para exibir o peso
-          Label pesoTela = new Label(Integer.toString(peso));
-          pesoTela.setLayoutX(xPeso);
-          pesoTela.setLayoutY(yPeso);
-          pesoConexoes.add(pesoTela);
+        //label que vai exibir o custo do caminho
+        Label pathCost = new Label(Integer.toString(peso));
+        pathCost.setLayoutX(xCost);
+        pathCost.setLayoutY(yCost);
+        conectionCost.add(pathCost);
 
-          // Adicionando a conexao entre os roteadores com a informacao do peso
-          nodes.get(nodeOne - 1).addConnection(nodeTwo, Line, pesoTela);
-          nodes.get(nodeTwo - 1).addConnection(nodeOne, Line, pesoTela);
-        }
+        //adicionando a conexao entre os roteadores com a informacao do peso
+        nodes.get(nodeOne - 1).addConnection(nodeTwo, Line, pathCost);
+        nodes.get(nodeTwo - 1).addConnection(nodeOne, Line, pathCost);
+      }
     }
-    //assembleGraph(root, routers);
-  }
+  }//fim do metodo createConnections
 
   /* ******************************************************************
   * Metodo: assembleGraph
@@ -268,35 +267,31 @@ public class mainControl implements Initializable{
   ****************************************************************** */
   private void assembleGraph(Pane root, ArrayList<Circle> routers) {
     for (Polyline Line : lines) {
-        Line.setStroke(Color.BLACK);
-        Line.setStrokeWidth(2);
-        root.getChildren().add(Line);
+      Line.setStroke(Color.BLACK);
+      Line.setStrokeWidth(2);
+      root.getChildren().add(Line);
     }
 
     for (Circle circle : routers) {
-        ImageView firstNode = new ImageView(new Image("./imgs/node.png"));
-        firstNode.setLayoutX(circle.getCenterX() - circle.getRadius());
-        firstNode.setLayoutY(circle.getCenterY() - circle.getRadius());
-        nodeImage.add(firstNode);
-        root.getChildren().add(firstNode);
+      ImageView firstNode = new ImageView(new Image("./imgs/node.png"));
+      firstNode.setLayoutX(circle.getCenterX() - circle.getRadius());
+      firstNode.setLayoutY(circle.getCenterY() - circle.getRadius());
+      nodeImage.add(firstNode);
+      root.getChildren().add(firstNode);
     }
 
     for (Label label : numbers) {
-        label.setStyle("-fx-font-size: 12pt; " + "-fx-font-weight: bold;");
-        root.getChildren().add(label);
+      label.setStyle("-fx-font-size: 12pt; " + "-fx-font-weight: bold;");
+      root.getChildren().add(label);
     }
 
-    // Adiciona os numeros do peso na tela
-    for (Label label : pesoConexoes) {
-        label.setStyle("-fx-font-size: 10pt; " + "-fx-font-weight: bold;");
-        label.setTextFill(Color.WHITE);
-        root.getChildren().add(label);
+    // adiciona o custo na tela
+    for (Label label : conectionCost) {
+      label.setStyle("-fx-font-size: 10pt; " + "-fx-font-weight: bold;");
+      label.setTextFill(Color.WHITE);
+      root.getChildren().add(label);
     }
-
-    for (int i = 0; i < nodes.size(); i++) {
-        nodes.get(i).listConnections();
-    }
-}
+  }//fim do metodo assembleGraph()
 
   /* ******************************************************************
   * Metodo: selectFirstNode
@@ -328,7 +323,7 @@ public class mainControl implements Initializable{
         selectFinalNode();
       });
     }
-  }
+  }//fim do metodo selectFirstNode()
 
   /* ******************************************************************
   * Metodo: selectFinalNode
@@ -365,14 +360,21 @@ public class mainControl implements Initializable{
         });
       }
     }
-  }
+  }//fim do metodo selectFinalNode()
 
+  /* ******************************************************************
+  * Metodo: opcaoSelecionada(MouseEvent event)
+  * Funcao: inicia o programa e desliga a tela inicial
+  * Parametros: 
+    - MouseEvent event: Clique do mouse no botao
+  * Retorno: void
+  ****************************************************************** */
   @FXML
   void opcaoSelecionada(MouseEvent event) {
     setOffOn(screen, 1);
     setOffOn(iniciar, 0);
     startProgram();
-  }
+  }//fim do metodo opcaoSelecionada
 
   /* ******************************************************************
   * Metodo: showAlert
@@ -387,7 +389,7 @@ public class mainControl implements Initializable{
     alert.setTitle(title);
     alert.setHeaderText(header);
     alert.showAndWait();
-  }
+  }//fim do metodo shorAlert()
 
   /* ******************************************************************
   * Metodo: clickStart
@@ -405,7 +407,7 @@ public class mainControl implements Initializable{
     } else {
      showAlert("Erro!","Selecione o Transmissor e/ou Receptor");
     }
-  }
+  }//fim do metodo clickStart()
 
 
   /* ******************************************************************
@@ -436,7 +438,7 @@ public class mainControl implements Initializable{
 
     Nodes routers = new Nodes();
     routers.resetRoutingTable();
-  }
+  }//fim do metodo reset()
 
   /* ******************************************************************
   * Metodo: resetVariables
@@ -459,7 +461,7 @@ public class mainControl implements Initializable{
     senderId.setText(null);
     caminho.setText(null);
     custoDoCaminho.setText(null);
-  }
+  }//fim do metodo resetVariables()
 
   /* ******************************************************************
   * Metodo: buttonEffects
@@ -493,8 +495,7 @@ public class mainControl implements Initializable{
     resetButton.setOnMouseExited(event -> {
       resetButton.setEffect(null);
     });
-
-  }
+  }//fim do metodo buttonEffects()
 
   /* ******************************************************************
   * Metodo: removeGraphs
@@ -512,10 +513,10 @@ public class mainControl implements Initializable{
     for (Label label : numbers) {
       getRoot().getChildren().remove(label);
     }
-    for (Label label : pesoConexoes){
+    for (Label label : conectionCost){
       getRoot().getChildren().remove(label);
     }
-  }
+  }//fim do metodo removeGraphs()
 
 
   /* ******************************************************************
@@ -531,114 +532,137 @@ public class mainControl implements Initializable{
     for (Label label : numbers) {
       root.getChildren().remove(label);
     }
-  }
+  }//fim do metodo packetRecived()
 
+  /* ******************************************************************
+  * Metodo: findShorterPath()
+  * Funcao: busca o roteador nao visitado com a menor distancia e chama sua funcao de menor caminho. 
+  Se todos os roteadores ja foram visitados, ele constroi e exibe o menor caminho entre o roteador inicial e o destino, 
+  ajustando a interface visual e enviando pacotes
+  * Parametros: null
+  * Retorno: void
+  ****************************************************************** */
   public void findShorterPath() {
-    boolean verify = false; // verifica se todos os roteadores ja foram visitados
-    int highValue = 99999;
-    int lowIndex = 0;
+    int shortestDistance = Integer.MAX_VALUE; 
+    int shortestNodeIndex = -1;
+    int originRouter = nodeReceiver - 1;
+    boolean unvisitedNodesExist = false;
 
-    // Percorre a lista para encontrar o menor valor e seu indice
+    ArrayList<Integer> pathIndex = new ArrayList<>();
+    StringBuilder pathBuilder = new StringBuilder();
+    
+    // percorre os roteadores para encontrar o menor caminho
     for (int i = 0; i < nodes.size(); i++) {
-      if(!nodes.get(i).getVisitado()){
-        verify = true;
-        int value = nodes.get(i).getDistance();
-        if (value < highValue && value != -1) {
-          highValue = value;
-          lowIndex = i;
+      Nodes currentNode = nodes.get(i);
+
+      if (!currentNode.getVisitado()) {
+        unvisitedNodesExist = true;
+        int distance = currentNode.getDistance();
+
+        if (distance != -1 && distance < shortestDistance) {
+          shortestDistance = distance;
+          shortestNodeIndex = i;
         }
       }
     }
-    if(verify){
-      nodes.get(lowIndex).getShortestPath(); // chama o roteador com o menor caminho
-    }
-    else{
-      for (Nodes x : nodes) {
-        char letter = (char) (x.getId() + 64);
-        System.out.println("Distancia do Roteador [ "+ Character.toString(letter) + " ] ate o roteador inicial: [ "+ x.getDistance() + " ]");
+
+    // ce existirem roteadores nao visitados, chama o proximo com o menor caminho
+    if (unvisitedNodesExist && shortestNodeIndex != -1) {
+      nodes.get(shortestNodeIndex).getShortestPath();
+    } else {
+      //caso todos os roteadores ja tenham sido visitados, imprime as distancias no terminal
+      for (Nodes node : nodes) {
+        char nodeLabel = (char) (node.getId() + 64);
+        System.out.println("Custo do roteador [" + nodeLabel + "] ate o inicial: " + node.getDistance());
       }
-      shortestPath();
-    }
-}
-
-public void shortestPath() {
-  ArrayList<Integer> aux = new ArrayList<>();
-
-  StringBuilder shortestPath = new StringBuilder();
-  int originRouter = nodeReceiver - 1;
-
-  // Construindo o menor caminho
-  while (nodeSender - 1 != originRouter) {
-      // Converte o predecessor para uma letra (ASCII)
-      char previous = (char) (nodes.get(originRouter).getPredecessor() + 64);
-      shortestPath.insert(0, " -> " + previous);
-      originRouter = nodes.get(originRouter).getPredecessor() - 1;
-      aux.add(originRouter);
-  }
+      
+      //construindo o menor caminho em ASCII
+      while (nodeSender - 1 != originRouter) {
+        //converte o predecessor para uma letra ASCII
+        char previous = (char) (nodes.get(originRouter).getPredecessor() + 64);
+        pathBuilder.insert(0, " -> " + previous);
+        originRouter = nodes.get(originRouter).getPredecessor() - 1;
+        pathIndex.add(originRouter);
+      }
   
-  shortestPath.append(" -> " + (char) (nodeReceiver + 64));
-  shortestPath.delete(0, 4);  // Remove o primeiro " -> "
+      //adiciona o receptor no final
+      char receiverLabel = (char) (nodeReceiver + 64);
+      pathBuilder.append(" -> " + receiverLabel).delete(0, 4);
 
-  System.out.println("");
-  System.out.println("Menor caminho: " + shortestPath.toString());
+      System.out.println("\nMenor caminho: " + pathBuilder.toString());
 
-  aux.add(nodeReceiver - 1);
+      pathIndex.add(nodeReceiver - 1);
 
-  // ajusta a opacidade das imagens de roteadores nao pertencentes ao menor caminho
-  for (int i = 0; i < nodeImage.size(); i++) {
-      ImageView imageView = nodeImage.get(i);  // obtem a ImageView atual
-      if (!aux.contains(i)) {
-          imageView.setOpacity(0.15);  // ajusta a opacidade da imagem
-      }
-  }
+      updateOpacity(pathIndex);
 
-  // Ajusta a opacidade das labels deroteadores nao pertencentes ao menor caminho
-  for (int i = 0; i < numbers.size(); i++) {
-      Label label = numbers.get(i);  // obtem a Label atual
-      if (!aux.contains(i)) {
-          label.setOpacity(0.15);  // ajusta a opacidade da label
-      }
-  }
-
-  // ajusta a opacidade dos roteadores na GUI
-  for (Nodes router : nodes) {
-      router.setOpacityGui();
-  }
-
-  // divide o menor caminho em uma lista de letras
-  String[] numerosString = shortestPath.toString().split(" -> ");
-  ArrayList<Integer> numeros = new ArrayList<>();
+      //divide o menor caminho em uma lista de letras em ascii
+      String[] strings = pathBuilder.toString().split(" -> ");
+      ArrayList<Integer> nums = new ArrayList<>();
   
-  for (String numeroString : numerosString) {
-      // Converte a letra de volta para o numero correspondente
-      int numero = numeroString.charAt(0) - 64;
-      numeros.add(numero);
-  }
+      for (String stringNum : strings) {
+        //agora converto o ascii para o numero correspondente
+        int numConverted = stringNum.charAt(0) - 64;
+        nums.add(numConverted);
+      }
 
-  // Ajusta a visualizacao das conexoes
-  for (int i = 0; i < numeros.size() - 1; i++) {
-      ArrayList<Integer> nos = nodes.get(numeros.get(i) - 1).getNodeConnection();
-      int indiceEncontrado = -1;  // Inicializa com -1 para indicar que nenhum indice foi encontrado
-      for (int j = 0; j < nos.size(); j++) {
-          if (nos.get(j).equals(numeros.get(i + 1))) {
-              indiceEncontrado = j;
-              break;  // Se encontrar o indice, nao eh necessário continuar procurando
+      for (int i = 0; i < nums.size() - 1; i++) {
+        ArrayList<Integer> roteadores = nodes.get(nums.get(i) - 1).getNodeConnection();
+        int indexFound = -1; 
+        for (int j = 0; j < roteadores.size(); j++) {
+          if (roteadores.get(j).equals(nums.get(i + 1))) {
+              indexFound = j;
+              break;  // se encontrar o indice, nao eh necessário continuar procurando
           }
+        }
+        nodes.get(nums.get(i) - 1).ajustInterface(indexFound);
       }
-      nodes.get(numeros.get(i) - 1).ajusteVisualizacaoGUI(indiceEncontrado);
-  }
+    
+      showShortestPath(pathBuilder);
+      nodes.get(nodeSender - 1).sendPackets(nums);//envia os pacotes
+    }
+  }//fim do metodo findShortestPath()
 
-  // Mostra o caminho final em ASCII na interface
-  menorCaminhoIMG.setVisible(true);
-  menorCaminhoIMG.setDisable(false);
-  caminho.setText(shortestPath.toString());
-  caminho.setVisible(true);
-  caminho.setDisable(false);
-  custoDoCaminho.setText(String.valueOf(nodes.get(nodeReceiver-1).getDistance()));
+  /* ******************************************************************
+  * Metodo: updateOpacity(ArrayList<Integer> pathIndex)
+  * Funcao: ajusta a opacidade das imagens de roteadores nao pertencentes ao menor caminho
+  * Parametros: pathIndex = index do caminho
+  * Retorno: void
+  ****************************************************************** */
+  public void updateOpacity(ArrayList<Integer> pathIndex){
+    for (int i = 0; i < nodeImage.size(); i++) {
+      ImageView imageView = nodeImage.get(i);  //obtem a ImageView atual
+      if (!pathIndex.contains(i)) {
+        imageView.setOpacity(0.15);  //ajusta a opacidade da imagem
+      }
+    }
 
-  // Envia os pacotes no caminho
-  nodes.get(nodeSender - 1).sendPackets(numeros);
-  }
+    for (int i = 0; i < numbers.size(); i++) {
+      Label label = numbers.get(i); 
+      if (!pathIndex.contains(i)) {
+        label.setOpacity(0.15);
+      }
+    }
+
+    for (Nodes router : nodes) {
+      router.setOpacityGui();
+    }
+  }//fim do metodo updateOpacity
+
+
+  /* ******************************************************************
+  * Metodo: showShortestPath(StringBuilder pathBuilder))
+  * Funcao: mostra o caminho final em ASCII na interface
+  * Parametros: StringBuilder pathBuilder = construtor do caminho em ascii
+  * Retorno: void
+  ****************************************************************** */
+  public void showShortestPath(StringBuilder pathBuilder){
+    menorCaminhoIMG.setVisible(true);
+    menorCaminhoIMG.setDisable(false);
+    caminho.setText(pathBuilder.toString());
+    caminho.setVisible(true);
+    caminho.setDisable(false);
+    custoDoCaminho.setText(String.valueOf(nodes.get(nodeReceiver-1).getDistance()));
+  }//fim do metodo showShortestPath()
 
   /* ******************************************************************
   * Metodo: startProgram()
@@ -651,7 +675,7 @@ public void shortestPath() {
     if(readBackbone()){
       addNode(root);
     };
-  }
+  }//fim do metodo startProgram()
 
   /* ******************************************************************
   * Metodo: settOffOn
@@ -670,8 +694,7 @@ public void shortestPath() {
       image.setVisible(true);
       image.setDisable(false);
     }
-
-  }
+  } //fim do metodo setOffOn()
 
   /* ******************************************************************
   * Metodo: changeScreen
@@ -684,7 +707,7 @@ public void shortestPath() {
     setOffOn(selectSender, 1);
     setOffOn(resetButton, 1);
     setOffOn(startButton, 1);
-  }
+  }//fim do metodo changeScreen
 
   //getters and setters
   public ArrayList<Nodes> getNodes() {

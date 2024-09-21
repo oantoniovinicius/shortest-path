@@ -30,7 +30,7 @@ public class Principal extends Application{
     
 
       primaryStage.getIcons().add(new Image("./imgs/icon.png"));
-      primaryStage.setTitle("Flood Routing");
+      primaryStage.setTitle("Shortest Path");
       primaryStage.setScene(new Scene(fxmlStart));
       primaryStage.setResizable(false);
       primaryStage.show();
